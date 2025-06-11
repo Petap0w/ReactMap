@@ -102,6 +102,7 @@ class LocalClient extends AuthClient {
               user.discordId = userExists.discordId
               user.telegramId = userExists.telegramId
               user.webhookStrategy = userExists.webhookStrategy
+              user.selectedWebhook = userExists.selectedWebhook
               user.data = userExists.data
               user.status = userExists.data
                 ? (typeof userExists.data === 'string'
