@@ -65,10 +65,12 @@ class LocalClient extends AuthClient {
                     password: await bcrypt.hash(password, 10),
                     strategy: 'local',
                     tutorial: !forceTutorial,
+                    data: "{\"status\":\"Free\"}"
                   })
                 user.id = newUser.id
                 user.username = newUser.username
                 user.perms = { ...user.perms, ...this.getPerms(trialActive) }
+                user.data = newUser.data
 
                 this.log.info(
                   user.username,
@@ -102,6 +104,7 @@ class LocalClient extends AuthClient {
               user.discordId = userExists.discordId
               user.telegramId = userExists.telegramId
               user.webhookStrategy = userExists.webhookStrategy
+              user.selectedWebhook = userExists.selectedWebhook
               user.data = userExists.data
               user.status = userExists.data
                 ? (typeof userExists.data === 'string'
