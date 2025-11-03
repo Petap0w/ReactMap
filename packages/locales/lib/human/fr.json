@@ -456,6 +456,7 @@
   "error_creating_user": "Impossible d'enregistrer un nouvel utilisateur pour le moment",
   "localauth_failed": "Authentification impossible",
   "discord_linked": "Discord lié",
+  "discord_not_linked": "Discord connecté mais non lié à un compte map - déconnectez-vous et connectez-vous avec votre nom d'utilisateur map pour pouvoir lier votre compte Discord",
   "telegram_linked": "Télégram lié",
   "level": "niveau",
   "km": "km",
