@@ -25,6 +25,7 @@ export function LocaleSelection() {
 
   return (
     <FCSelect
+      autoFocus={false}
       setWidth={setWidth}
       renderValue={(v) => t(`locale_selection_${v}`)}
       label={t('locale_selection')}
