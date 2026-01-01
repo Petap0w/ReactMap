@@ -191,7 +191,8 @@ const BasePokemonTile = (pkmn) => {
             })
           : basicPokemonMarker({ iconUrl, iconSize })
       }
-      eventHandlers={{ popupopen: handlePopupOpen }}
+      interactive={!!perms?.pokemonpopup}
+      eventHandlers={perms?.pokemonpopup ? { popupopen: handlePopupOpen } : {}}
     >
       {perms?.pokemonpopup && (
         <Popup position={finalLocation}>
