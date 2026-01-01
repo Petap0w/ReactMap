@@ -457,6 +457,7 @@
     },
     "links": {
       "discordInvite": "MAP_LINKS_DISCORD_INVITE",
+      "discordLinkName": "MAP_LINKS_DISCORD_LINK_NAME",
       "discordLink": "MAP_LINKS_DISCORD_LINK",
       "feedbackLink": "MAP_LINKS_FEEDBACK_LINK",
       "statsLink": "MAP_LINKS_STATS_LINK",

@@ -27,7 +27,7 @@ export function UserProfile() {
   useAnalytics('/user-profile')
   const { t } = useTranslation()
   const auth = useMemory((s) => s.auth)
-  const { rolesLinkName, rolesLink } = useMemory((s) => s.config.links)
+  const { rolesLinkName, rolesLink, discordLinkName, discordLink } = useMemory((s) => s.config.links)
 
   const locale = localStorage.getItem('i18nextLng') || 'en'
 
@@ -135,6 +135,16 @@ export function UserProfile() {
                     : rolesLinkName[locale] || Object.values(rolesLinkName)[0],
                 link: rolesLink,
                 color: 'primary',
+              }
+            : {},
+          discordLink
+            ? {
+                name:
+                  typeof discordLinkName === 'string'
+                    ? discordLinkName
+                    : discordLinkName[locale] || Object.values(discordLinkName)[0],
+                link: discordLink,
+                color: 'secondary',
               }
             : {},
           {
