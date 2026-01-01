@@ -827,6 +827,11 @@
         "trialPeriodEligible": false,
         "roles": []
       },
+      "pokemonpopup": {
+        "enabled": true,
+        "trialPeriodEligible": false,
+        "roles": []
+      },
       "gyms": {
         "enabled": true,
         "trialPeriodEligible": false,

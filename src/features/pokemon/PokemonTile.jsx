@@ -44,6 +44,7 @@ const BasePokemonTile = (pkmn) => {
 
   const [markerRef, setMarkerRef] = React.useState(null)
 
+  const perms = useMemory((s) => s.auth.perms)
   const opacity = useOpacity('pokemon')(pkmn.expire_timestamp)
 
   const [
@@ -192,9 +193,11 @@ const BasePokemonTile = (pkmn) => {
       }
       eventHandlers={{ popupopen: handlePopupOpen }}
     >
-      <Popup position={finalLocation}>
-        <PokemonPopup pokemon={pkmn} iconUrl={iconUrl} />
-      </Popup>
+      {perms?.pokemonpopup && (
+        <Popup position={finalLocation}>
+          <PokemonPopup pokemon={pkmn} iconUrl={iconUrl} />
+        </Popup>
+      )}
       {(showTimer || timerOverride || extras.length > 0) && (
         <TooltipWrapper
           timers={showTimer || timerOverride ? [pkmn.expire_timestamp] : []}

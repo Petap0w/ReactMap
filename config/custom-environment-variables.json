@@ -1742,6 +1742,20 @@
           "__format": "json"
         }
       },
+      "pokemonpopup": {
+        "enabled": {
+          "__name": "AUTHENTICATION_PERMS_POKEMONPOPUP_ENABLED",
+          "__format": "boolean"
+        },
+        "trialPeriodEligible": {
+          "__name": "AUTHENTICATION_PERMS_POKEMONPOPUP_TRIAL_PERIOD_ELIGIBLE",
+          "__format": "boolean"
+        },
+        "roles": {
+          "__name": "AUTHENTICATION_PERMS_POKEMONPOPUP_ROLES",
+          "__format": "json"
+        }
+      },
       "gyms": {
         "enabled": {
           "__name": "AUTHENTICATION_PERMS_GYMS_ENABLED",
