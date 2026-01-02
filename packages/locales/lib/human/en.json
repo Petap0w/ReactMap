@@ -287,6 +287,7 @@
   "map_subtitle": "Shows the map",
   "nests_subtitle": "Shows actively nesting Pokémon and nest polygons",
   "pokemon_subtitle": "Shows all Pokémon locations and expire times",
+  "pokemon_details_upgrade_required": "Pokémon details require to upgrade your account to Explorer or Premium status - details available from the Manage My Account link on Profile page",
   "pokestops_subtitle": "Shows all PokéStop locations",
   "portals_subtitle": "Shows all Ingress portals",
   "pvp_subtitle": "Shows PVP rank/CP/Level info for each Pokémon",

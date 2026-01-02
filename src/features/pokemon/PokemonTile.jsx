@@ -3,6 +3,8 @@
 import * as React from 'react'
 import { Marker, Popup, Circle } from 'react-leaflet'
 import { t } from 'i18next'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 
 import { useMarkerTimer } from '@hooks/useMarkerTimer'
 import { getOffset } from '@utils/offset'
@@ -45,6 +47,7 @@ const BasePokemonTile = (pkmn) => {
   const [markerRef, setMarkerRef] = React.useState(null)
 
   const perms = useMemory((s) => s.auth.perms)
+  const [showUpgradeSnackbar, setShowUpgradeSnackbar] = React.useState(false)
   const opacity = useOpacity('pokemon')(pkmn.expire_timestamp)
 
   const [
@@ -141,6 +144,16 @@ const BasePokemonTile = (pkmn) => {
   useForcePopup(pkmn.id, markerRef)
   useMarkerTimer(pkmn.expire_timestamp, markerRef)
   const handlePopupOpen = useManualPopupTracker('pokemon', pkmn.id)
+
+  const handleMarkerClick = React.useCallback(() => {
+    if (!perms?.pokemonpopup) {
+      setShowUpgradeSnackbar(true)
+    }
+  }, [perms?.pokemonpopup])
+
+  const handleSnackbarClose = React.useCallback(() => {
+    setShowUpgradeSnackbar(false)
+  }, [])
   sendNotification(
     pkmn.id,
     `${t(`poke_${pkmn.pokemon_id}`)}${
@@ -165,35 +178,40 @@ const BasePokemonTile = (pkmn) => {
   }
 
   return (
-    <Marker
-      ref={setMarkerRef}
-      zIndexOffset={
-        (typeof pkmn.iv === 'number' ? pkmn.iv || 99 : 0) * 100 +
-        40.96 -
-        pkmn.bestPvp
-      }
-      position={finalLocation}
-      icon={
-        (pkmn.bestPvp !== null && pkmn.bestPvp < 4 && extras.length === 0) ||
-        showGlow ||
-        showWeather ||
-        opacity < 1 ||
-        pkmn.seen_type === 'nearby_cell'
-          ? fancyPokemonMarker({
-              pkmn,
-              iconUrl,
-              iconSize,
-              showGlow,
-              showWeather,
-              badge: extras.length ? null : badge,
-              opacity,
-              timeOfDay,
-            })
-          : basicPokemonMarker({ iconUrl, iconSize })
-      }
-      interactive={!!perms?.pokemonpopup}
-      eventHandlers={perms?.pokemonpopup ? { popupopen: handlePopupOpen } : {}}
-    >
+    <>
+      <Marker
+        ref={setMarkerRef}
+        zIndexOffset={
+          (typeof pkmn.iv === 'number' ? pkmn.iv || 99 : 0) * 100 +
+          40.96 -
+          pkmn.bestPvp
+        }
+        position={finalLocation}
+        icon={
+          (pkmn.bestPvp !== null && pkmn.bestPvp < 4 && extras.length === 0) ||
+          showGlow ||
+          showWeather ||
+          opacity < 1 ||
+          pkmn.seen_type === 'nearby_cell'
+            ? fancyPokemonMarker({
+                pkmn,
+                iconUrl,
+                iconSize,
+                showGlow,
+                showWeather,
+                badge: extras.length ? null : badge,
+                opacity,
+                timeOfDay,
+              })
+            : basicPokemonMarker({ iconUrl, iconSize })
+        }
+        interactive={true}
+        eventHandlers={
+          perms?.pokemonpopup
+            ? { popupopen: handlePopupOpen }
+            : { click: handleMarkerClick }
+        }
+      >
       {perms?.pokemonpopup && (
         <Popup position={finalLocation}>
           <PokemonPopup pokemon={pkmn} iconUrl={iconUrl} />
@@ -231,7 +249,23 @@ const BasePokemonTile = (pkmn) => {
           weight={1}
         />
       )}
-    </Marker>
+      </Marker>
+      <Snackbar
+        open={showUpgradeSnackbar}
+        autoHideDuration={5000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="info"
+          variant="filled"
+          sx={{ textAlign: 'center' }}
+        >
+          {t('pokemon_details_upgrade_required')}
+        </Alert>
+      </Snackbar>
+    </>
   )
 }
 
