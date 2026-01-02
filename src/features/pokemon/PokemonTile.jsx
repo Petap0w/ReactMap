@@ -260,7 +260,7 @@ const BasePokemonTile = (pkmn) => {
           onClose={handleSnackbarClose}
           severity="info"
           variant="filled"
-          sx={{ textAlign: 'center' }}
+          sx={{ textAlign: 'center', whiteSpace: 'pre-line' }}
         >
           {t('pokemon_details_upgrade_required')}
         </Alert>
