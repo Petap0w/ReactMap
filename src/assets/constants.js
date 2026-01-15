@@ -62,7 +62,7 @@ export const METHODS = /** @type {const} */ (['discord', 'telegram'])
 
 export const FILTER_SKIP_LIST = ['filter', 'enabled', 'legacy']
 
-export const ALWAYS_EXCLUDED = new Set(['donor', 'blockedGuildNames', 'admin', 'pokemonpopup'])
+export const ALWAYS_EXCLUDED = new Set(['donor', 'blockedGuildNames', 'admin', 'pokemonpopup', 'popupcoords'])
 
 export const SCAN_MODES = ['confirmed', 'loading', 'error']
 

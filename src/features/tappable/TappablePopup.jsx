@@ -30,6 +30,7 @@ import { getTappableDisplaySettings } from './displayRules'
  */
 export function TappablePopup({ tappable, rewardIcon }) {
   const { t, i18n } = useTranslation()
+  const perms = useMemory((s) => s.auth.perms)
   const showCoords = useStorage(
     (s) => !!s.userSettings.tappables?.enableTappablePopupCoords,
   )
@@ -74,7 +75,7 @@ export function TappablePopup({ tappable, rewardIcon }) {
   }, [Icons, tappable.type])
 
   const hasExpireTime = !!tappable.expire_timestamp
-  const hasExtras = showCoords || tappable.updated
+  const hasExtras = (perms.popupcoords && showCoords) || tappable.updated
   const hasRewardIcon = !!rewardIcon
   const useRewardAsPrimary =
     displaySettings.popup.rewardAsPrimary && hasRewardIcon
@@ -325,7 +326,7 @@ export function TappablePopup({ tappable, rewardIcon }) {
                 last_updated
               </TimeStamp>
             )}
-            {showCoords && (
+            {perms.popupcoords && showCoords && (
               <Grid xs={12}>
                 <Coords lat={tappable.lat} lon={tappable.lon} />
               </Grid>

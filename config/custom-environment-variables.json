@@ -1756,6 +1756,20 @@
           "__format": "json"
         }
       },
+      "popupcoords": {
+        "enabled": {
+          "__name": "AUTHENTICATION_PERMS_POPUPCOORDS_ENABLED",
+          "__format": "boolean"
+        },
+        "trialPeriodEligible": {
+          "__name": "AUTHENTICATION_PERMS_POPUPCOORDS_TRIAL_PERIOD_ELIGIBLE",
+          "__format": "boolean"
+        },
+        "roles": {
+          "__name": "AUTHENTICATION_PERMS_POPUPCOORDS_ROLES",
+          "__format": "json"
+        }
+      },
       "gyms": {
         "enabled": {
           "__name": "AUTHENTICATION_PERMS_GYMS_ENABLED",

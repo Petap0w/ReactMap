@@ -832,6 +832,11 @@
         "trialPeriodEligible": false,
         "roles": []
       },
+      "popupcoords": {
+        "enabled": true,
+        "trialPeriodEligible": false,
+        "roles": []
+      },
       "gyms": {
         "enabled": true,
         "trialPeriodEligible": false,

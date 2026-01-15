@@ -757,7 +757,7 @@ const ExtraPokemonInfo = ({ pokemon, perms, userSettings }) => {
           </Typography>
         </Grid>
       )}
-      {userSettings.enablePokemonPopupCoords && (
+      {perms.popupcoords && userSettings.enablePokemonPopupCoords && (
         <Grid xs={12} textAlign="center">
           <Coords lat={pokemon.lat.toFixed(6)} lon={pokemon.lon.toFixed(6)} />
         </Grid>
