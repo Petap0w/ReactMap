@@ -156,6 +156,7 @@
       "fixedIntervalMinRequests": 30,
       "fixedIntervalMinDuration": 900000,
       "userVolumeMinDuration": 900000,
+      "ipVolumeMinDuration": 1800000,
       "discordChannel": "monitoring",
       "monitoredOperationNames": [
         "PokemonIVs",

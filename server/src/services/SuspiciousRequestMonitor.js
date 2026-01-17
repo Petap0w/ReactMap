@@ -92,6 +92,10 @@ class SuspiciousRequestMonitor extends Logger {
         'api.monitoring.userVolumeMinDuration',
         1800000,
       ), // 30 minutes (minimum duration for high volume user alerts)
+      ipVolumeMinDuration: config.getSafe(
+        'api.monitoring.ipVolumeMinDuration',
+        1800000,
+      ), // 30 minutes (minimum duration for high volume IP alerts)
 
       // Enabled checks
       enableIpTracking: config.getSafe('api.monitoring.enableIpTracking', true),
@@ -269,40 +273,49 @@ class SuspiciousRequestMonitor extends Logger {
     )
 
     if (recentRequests.length >= this.config.ipRequestThreshold) {
-      const alertKey = `ip-volume:${ip}`
-      if (!this.#alertCache.has(alertKey)) {
-        this.#alertCache.set(alertKey, true)
+      // Calculate total duration from first to last request
+      const firstRequestTime = recentRequests[0].timestamp
+      const lastRequestTime = recentRequests[recentRequests.length - 1].timestamp
+      const totalDuration = lastRequestTime - firstRequestTime
 
-        // Collect unique users with usernames
-        const userMap = new Map()
-        recentRequests.forEach((r) => {
-          if (r.userId && r.username) {
-            if (!userMap.has(r.userId)) {
-              userMap.set(r.userId, r.username)
+      // Only alert if IP has maintained high volume for minimum duration (long session/DDoS)
+      if (totalDuration >= this.config.ipVolumeMinDuration) {
+        const alertKey = `ip-volume:${ip}`
+        if (!this.#alertCache.has(alertKey)) {
+          this.#alertCache.set(alertKey, true)
+
+          // Collect unique users with usernames
+          const userMap = new Map()
+          recentRequests.forEach((r) => {
+            if (r.userId && r.username) {
+              if (!userMap.has(r.userId)) {
+                userMap.set(r.userId, r.username)
+              }
             }
-          }
-        })
-        const usersList = Array.from(userMap.entries()).map(
-          ([userId, username]) => `${username} (ID: ${userId})`,
-        )
+          })
+          const usersList = Array.from(userMap.entries()).map(
+            ([userId, username]) => `${username} (ID: ${userId})`,
+          )
 
-        this.log.warn(
-          `High volume detected from IP ${ip}:`,
-          recentRequests.length,
-          'requests in last hour',
-        )
+          this.log.warn(
+            `High volume detected from IP ${ip}:`,
+            recentRequests.length,
+            `requests over ${(totalDuration / 1000 / 60).toFixed(0)} minutes`,
+          )
 
-        await this.#sendAlert(event, {
-          type: 'HIGH_VOLUME_IP',
-          severity: 'warning',
-          ip,
-          endpoint: record.endpoint,
-          requestCount: recentRequests.length,
-          timeWindow: '1 hour',
-          uniqueUsers: userMap.size,
-          usersList,
-          topEndpoints: this.#getTopEndpoints(recentRequests),
-        })
+          await this.#sendAlert(event, {
+            type: 'HIGH_VOLUME_IP',
+            severity: 'warning',
+            ip,
+            endpoint: record.endpoint,
+            requestCount: recentRequests.length,
+            duration: totalDuration,
+            timeWindow: '1 hour',
+            uniqueUsers: userMap.size,
+            usersList,
+            topEndpoints: this.#getTopEndpoints(recentRequests),
+          })
+        }
       }
     }
   }
