@@ -80,6 +80,14 @@ class SuspiciousRequestMonitor extends Logger {
         'api.monitoring.locationIntervalTolerance',
         30000,
       ), // 30 seconds
+      fixedIntervalMinRequests: config.getSafe(
+        'api.monitoring.fixedIntervalMinRequests',
+        30,
+      ), // Minimum number of requests before alerting (detect long sessions)
+      fixedIntervalMinDuration: config.getSafe(
+        'api.monitoring.fixedIntervalMinDuration',
+        900000,
+      ), // 15 minutes (minimum duration before alerting)
 
       // Enabled checks
       enableIpTracking: config.getSafe('api.monitoring.enableIpTracking', true),
@@ -469,8 +477,9 @@ class SuspiciousRequestMonitor extends Logger {
 
     this.#locationPatternCache.set(key, recentHistory)
 
-    // Check for fixed interval pattern (need at least 5 requests)
-    if (recentHistory.length >= 5) {
+    // Check for fixed interval pattern - detect long static sessions (likely automation/scraping)
+    // Need minimum requests to indicate a long session
+    if (recentHistory.length >= this.config.fixedIntervalMinRequests) {
       const intervals = []
       for (let i = 1; i < recentHistory.length; i++) {
         intervals.push(
@@ -488,45 +497,45 @@ class SuspiciousRequestMonitor extends Logger {
         ) / intervals.length
       const stdDev = Math.sqrt(variance)
 
-      // Check if this interval matches a known polling interval (within 2s tolerance)
-      const matchesKnownPollingInterval = this.config.knownPollingIntervals.some(
-        (knownInterval) => Math.abs(avgInterval - knownInterval) < 2000,
-      )
-
       // If standard deviation is low, intervals are regular (suspicious)
-      // But skip if it matches a known polling interval (normal user behavior)
-      if (
-        stdDev < this.config.locationIntervalTolerance &&
-        avgInterval > 0 &&
-        !matchesKnownPollingInterval
-      ) {
+      // Alert even if it matches known polling intervals (could be scraping with matching intervals)
+      if (stdDev < this.config.locationIntervalTolerance && avgInterval > 0) {
         // Also check if same location is being queried repeatedly
         const sameLocation = recentHistory.every(
           (h) => this.calculateDistance(h.center, center) < 0.01, // Within 10 meters
         )
 
         if (sameLocation) {
-          const alertKey = `fixed-interval:${key}:${center.lat.toFixed(4)},${center.lon.toFixed(4)}`
-          if (!this.#alertCache.has(alertKey)) {
-            this.#alertCache.set(alertKey, true)
+          // Calculate total duration from first to last request
+          const firstRequestTime = recentHistory[0].timestamp
+          const lastRequestTime = recentHistory[recentHistory.length - 1].timestamp
+          const totalDuration = lastRequestTime - firstRequestTime
 
-            this.log.warn(
-              `Fixed interval pattern detected:`,
-              `${userId ? `User ${username}` : `IP ${ip}`}`,
-              `querying same location every ${(avgInterval / 1000).toFixed(0)}s`,
-            )
+          // Only alert if pattern has persisted for minimum duration (long static session)
+          if (totalDuration >= this.config.fixedIntervalMinDuration) {
+            const alertKey = `fixed-interval:${key}:${center.lat.toFixed(4)},${center.lon.toFixed(4)}`
+            if (!this.#alertCache.has(alertKey)) {
+              this.#alertCache.set(alertKey, true)
 
-            await this.#sendAlert(event, {
-              type: 'FIXED_INTERVAL_PATTERN',
-              severity: 'high',
-              userId,
-              username,
-              ip,
-              interval: avgInterval,
-              requestCount: recentHistory.length,
-              location: center,
-              endpoint,
-            })
+              this.log.warn(
+                `Fixed interval pattern detected:`,
+                `${userId ? `User ${username}` : `IP ${ip}`}`,
+                `querying same location every ${(avgInterval / 1000).toFixed(0)}s for ${(totalDuration / 1000).toFixed(0)}s`,
+              )
+
+              await this.#sendAlert(event, {
+                type: 'FIXED_INTERVAL_PATTERN',
+                severity: 'high',
+                userId,
+                username,
+                ip,
+                interval: avgInterval,
+                duration: totalDuration,
+                requestCount: recentHistory.length,
+                location: center,
+                endpoint,
+              })
+            }
           }
         }
       }
@@ -609,6 +618,9 @@ class SuspiciousRequestMonitor extends Logger {
     }
     if (alertData.interval) {
       description += `**Interval:** ${(alertData.interval / 1000).toFixed(0)}s\n`
+    }
+    if (alertData.duration) {
+      description += `**Duration:** ${(alertData.duration / 1000).toFixed(0)}s\n`
     }
     if (alertData.message) {
       description += `\n**Details:** ${alertData.message}\n`

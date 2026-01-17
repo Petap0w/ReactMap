@@ -434,6 +434,14 @@
         "__name": "API_MONITORING_LOCATION_INTERVAL_TOLERANCE",
         "__format": "number"
       },
+      "fixedIntervalMinRequests": {
+        "__name": "API_MONITORING_FIXED_INTERVAL_MIN_REQUESTS",
+        "__format": "number"
+      },
+      "fixedIntervalMinDuration": {
+        "__name": "API_MONITORING_FIXED_INTERVAL_MIN_DURATION",
+        "__format": "number"
+      },
       "discordChannel": "API_MONITORING_DISCORD_CHANNEL",
       "monitoredOperationNames": {
         "__name": "API_MONITORING_MONITORED_OPERATION_NAMES",

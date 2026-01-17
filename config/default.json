@@ -153,6 +153,8 @@
       "repeatedLocationThreshold": 100,
       "repeatedLocationTimeWindow": 900000,
       "locationIntervalTolerance": 60000,
+      "fixedIntervalMinRequests": 30,
+      "fixedIntervalMinDuration": 900000,
       "discordChannel": "monitoring",
       "monitoredOperationNames": [
         "PokemonIVs",
