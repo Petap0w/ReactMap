@@ -88,6 +88,10 @@ class SuspiciousRequestMonitor extends Logger {
         'api.monitoring.fixedIntervalMinDuration',
         900000,
       ), // 15 minutes (minimum duration before alerting)
+      userVolumeMinDuration: config.getSafe(
+        'api.monitoring.userVolumeMinDuration',
+        1800000,
+      ), // 30 minutes (minimum duration for high volume user alerts)
 
       // Enabled checks
       enableIpTracking: config.getSafe('api.monitoring.enableIpTracking', true),
@@ -324,27 +328,36 @@ class SuspiciousRequestMonitor extends Logger {
     )
 
     if (recentRequests.length >= this.config.userRequestThreshold) {
-      const alertKey = `user-volume:${userId}`
-      if (!this.#alertCache.has(alertKey)) {
-        this.#alertCache.set(alertKey, true)
+      // Calculate total duration from first to last request
+      const firstRequestTime = recentRequests[0].timestamp
+      const lastRequestTime = recentRequests[recentRequests.length - 1].timestamp
+      const totalDuration = lastRequestTime - firstRequestTime
 
-        this.log.warn(
-          `High volume detected from user ${username} (${userId}):`,
-          recentRequests.length,
-          'requests in last hour',
-        )
+      // Only alert if user has maintained high volume for minimum duration (long session)
+      if (totalDuration >= this.config.userVolumeMinDuration) {
+        const alertKey = `user-volume:${userId}`
+        if (!this.#alertCache.has(alertKey)) {
+          this.#alertCache.set(alertKey, true)
 
-        await this.#sendAlert(event, {
-          type: 'HIGH_VOLUME_USER',
-          severity: 'warning',
-          userId,
-          username,
-          endpoint: record.endpoint,
-          requestCount: recentRequests.length,
-          timeWindow: '1 hour',
-          topEndpoints: this.#getTopEndpoints(recentRequests),
-          topCategories: this.#getTopCategories(recentRequests),
-        })
+          this.log.warn(
+            `High volume detected from user ${username} (${userId}):`,
+            recentRequests.length,
+            `requests over ${(totalDuration / 1000 / 60).toFixed(0)} minutes`,
+          )
+
+          await this.#sendAlert(event, {
+            type: 'HIGH_VOLUME_USER',
+            severity: 'warning',
+            userId,
+            username,
+            endpoint: record.endpoint,
+            requestCount: recentRequests.length,
+            duration: totalDuration,
+            timeWindow: '1 hour',
+            topEndpoints: this.#getTopEndpoints(recentRequests),
+            topCategories: this.#getTopCategories(recentRequests),
+          })
+        }
       }
     }
   }

@@ -442,6 +442,10 @@
         "__name": "API_MONITORING_FIXED_INTERVAL_MIN_DURATION",
         "__format": "number"
       },
+      "userVolumeMinDuration": {
+        "__name": "API_MONITORING_USER_VOLUME_MIN_DURATION",
+        "__format": "number"
+      },
       "discordChannel": "API_MONITORING_DISCORD_CHANNEL",
       "monitoredOperationNames": {
         "__name": "API_MONITORING_MONITORED_OPERATION_NAMES",
