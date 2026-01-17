@@ -128,7 +128,10 @@ class SuspiciousRequestMonitor extends Logger {
    * @returns {string}
    */
   getIpAddress(req) {
+    // When behind Cloudflare, CF-Connecting-IP is the most reliable header
+    // It contains the original client IP address and cannot be spoofed
     return (
+      req.headers['cf-connecting-ip'] ||
       req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
       req.headers['x-real-ip'] ||
       req.connection?.remoteAddress ||
