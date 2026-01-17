@@ -54,6 +54,12 @@ class SuspiciousRequestMonitor extends Logger {
   constructor() {
     super('suspicious-monitor')
 
+    // Get known polling intervals from config (convert seconds to milliseconds)
+    const pollingConfig = config.getSafe('api.polling', {})
+    const knownPollingIntervals = Object.values(pollingConfig)
+      .filter((val) => typeof val === 'number' && val > 0)
+      .map((seconds) => seconds * 1000) // Convert to milliseconds
+
     this.config = {
       // Thresholds
       ipRequestThreshold: config.getSafe('api.monitoring.ipRequestThreshold', 500),
@@ -85,6 +91,9 @@ class SuspiciousRequestMonitor extends Logger {
       ),
       discordChannel: config.getSafe('api.monitoring.discordChannel', 'main'),
       monitoredOperationNames: config.getSafe('api.monitoring.monitoredOperationNames', []),
+
+      // Known polling intervals (in milliseconds) - intervals that match these are considered normal
+      knownPollingIntervals,
     }
   }
 
@@ -206,18 +215,18 @@ class SuspiciousRequestMonitor extends Logger {
       await this.#checkUserVolume(record, event)
     }
 
-    // 3. Check repeated location queries
-    if (this.config.enableLocationTracking && bbox) {
+    // 3. Check repeated location queries (only for authenticated users)
+    if (this.config.enableLocationTracking && bbox && userId) {
       await this.#checkRepeatedLocation(record, event)
     }
 
-    // 4. Check geographical coverage
-    if (this.config.enableGeographicalTracking && bbox) {
+    // 4. Check geographical coverage (only for authenticated users)
+    if (this.config.enableGeographicalTracking && bbox && userId) {
       await this.#checkGeographicalCoverage(record, event)
     }
 
-    // 5. Check fixed interval patterns
-    if (this.config.enableLocationTracking && center) {
+    // 5. Check fixed interval patterns (only for authenticated users)
+    if (this.config.enableLocationTracking && center && userId) {
       await this.#checkFixedIntervalPattern(record, event)
     }
   }
@@ -249,6 +258,19 @@ class SuspiciousRequestMonitor extends Logger {
       if (!this.#alertCache.has(alertKey)) {
         this.#alertCache.set(alertKey, true)
 
+        // Collect unique users with usernames
+        const userMap = new Map()
+        recentRequests.forEach((r) => {
+          if (r.userId && r.username) {
+            if (!userMap.has(r.userId)) {
+              userMap.set(r.userId, r.username)
+            }
+          }
+        })
+        const usersList = Array.from(userMap.entries()).map(
+          ([userId, username]) => `${username} (ID: ${userId})`,
+        )
+
         this.log.warn(
           `High volume detected from IP ${ip}:`,
           recentRequests.length,
@@ -262,7 +284,8 @@ class SuspiciousRequestMonitor extends Logger {
           endpoint: record.endpoint,
           requestCount: recentRequests.length,
           timeWindow: '1 hour',
-          uniqueUsers: new Set(recentRequests.map((r) => r.userId)).size,
+          uniqueUsers: userMap.size,
+          usersList,
           topEndpoints: this.#getTopEndpoints(recentRequests),
         })
       }
@@ -465,10 +488,17 @@ class SuspiciousRequestMonitor extends Logger {
         ) / intervals.length
       const stdDev = Math.sqrt(variance)
 
+      // Check if this interval matches a known polling interval (within 2s tolerance)
+      const matchesKnownPollingInterval = this.config.knownPollingIntervals.some(
+        (knownInterval) => Math.abs(avgInterval - knownInterval) < 2000,
+      )
+
       // If standard deviation is low, intervals are regular (suspicious)
+      // But skip if it matches a known polling interval (normal user behavior)
       if (
         stdDev < this.config.locationIntervalTolerance &&
-        avgInterval > 0
+        avgInterval > 0 &&
+        !matchesKnownPollingInterval
       ) {
         // Also check if same location is being queried repeatedly
         const sameLocation = recentHistory.every(
@@ -604,10 +634,13 @@ class SuspiciousRequestMonitor extends Logger {
       })
     }
     if (alertData.uniqueUsers !== undefined) {
+      const usersValue = alertData.usersList
+        ? alertData.usersList.join('\n') || 'None'
+        : String(alertData.uniqueUsers)
       fields.push({
-        name: 'Unique Users',
-        value: String(alertData.uniqueUsers),
-        inline: true,
+        name: `Unique Users${alertData.usersList ? '' : `: ${alertData.uniqueUsers}`}`,
+        value: usersValue,
+        inline: false,
       })
     }
 
