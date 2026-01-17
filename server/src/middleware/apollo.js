@@ -7,6 +7,7 @@ const { parse } = require('graphql')
 const { state } = require('../services/state')
 const { version } = require('../../../package.json')
 const { DataLimitCheck } = require('../services/DataLimitCheck')
+const { log, TAGS } = require('@rm/logger')
 
 /**
  *
@@ -90,6 +91,50 @@ function apolloMiddleware(server) {
             code: ApolloServerErrorCode.BAD_REQUEST,
           },
         })
+      }
+
+      // Track request for monitoring (async, don't await to avoid blocking)
+      if (definition?.operation === 'query' && endpoint) {
+        const variables = req.body.variables || {}
+        const bbox =
+          variables.minLat !== undefined && variables.minLat !== null
+            ? {
+                minLat: variables.minLat,
+                maxLat: variables.maxLat || variables.minLat,
+                minLon: variables.minLon,
+                maxLon: variables.maxLon || variables.minLon,
+              }
+            : undefined
+
+        const center = variables.lat && variables.lon
+          ? { lat: variables.lat, lon: variables.lon }
+          : bbox
+            ? {
+                lat: (bbox.minLat + bbox.maxLat) / 2,
+                lon: (bbox.minLon + bbox.maxLon) / 2,
+              }
+            : undefined
+
+        state.suspiciousMonitor
+          .trackRequest(
+            {
+              timestamp: Date.now(),
+              endpoint,
+              category: userDataLimit.category,
+              userId: id,
+              username,
+              ip: state.suspiciousMonitor.getIpAddress(req),
+              userAgent: req.headers['user-agent'],
+              bbox,
+              center,
+              queryComplexity: variables ? Object.keys(variables).length : 0,
+            },
+            state.event,
+          )
+          .catch((err) => {
+            // Log but don't fail the request
+            log.error(TAGS.api, 'Error in suspicious request monitoring:', err)
+          })
       }
 
       return {

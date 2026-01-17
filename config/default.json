@@ -141,6 +141,19 @@
     },
     "kojiOptions": {
       "bearerToken": "KOJI_SECRET"
+    },
+    "monitoring": {
+      "enableIpTracking": true,
+      "enableUserTracking": true,
+      "enableLocationTracking": true,
+      "enableGeographicalTracking": true,
+      "ipRequestThreshold": 500,
+      "userRequestThreshold": 1000,
+      "geographicalCoverageThreshold": 1000,
+      "repeatedLocationThreshold": 10,
+      "repeatedLocationTimeWindow": 300000,
+      "locationIntervalTolerance": 30000,
+      "discordChannel": "main"
     }
   },
   "map": {

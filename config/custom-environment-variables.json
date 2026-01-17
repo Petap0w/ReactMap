@@ -392,6 +392,49 @@
     },
     "kojiOptions": {
       "bearerToken": "API_KOJI_OPTIONS_BEARER_TOKEN"
+    },
+    "monitoring": {
+      "enableIpTracking": {
+        "__name": "API_MONITORING_ENABLE_IP_TRACKING",
+        "__format": "boolean"
+      },
+      "enableUserTracking": {
+        "__name": "API_MONITORING_ENABLE_USER_TRACKING",
+        "__format": "boolean"
+      },
+      "enableLocationTracking": {
+        "__name": "API_MONITORING_ENABLE_LOCATION_TRACKING",
+        "__format": "boolean"
+      },
+      "enableGeographicalTracking": {
+        "__name": "API_MONITORING_ENABLE_GEOGRAPHICAL_TRACKING",
+        "__format": "boolean"
+      },
+      "ipRequestThreshold": {
+        "__name": "API_MONITORING_IP_REQUEST_THRESHOLD",
+        "__format": "number"
+      },
+      "userRequestThreshold": {
+        "__name": "API_MONITORING_USER_REQUEST_THRESHOLD",
+        "__format": "number"
+      },
+      "geographicalCoverageThreshold": {
+        "__name": "API_MONITORING_GEOGRAPHICAL_COVERAGE_THRESHOLD",
+        "__format": "number"
+      },
+      "repeatedLocationThreshold": {
+        "__name": "API_MONITORING_REPEATED_LOCATION_THRESHOLD",
+        "__format": "number"
+      },
+      "repeatedLocationTimeWindow": {
+        "__name": "API_MONITORING_REPEATED_LOCATION_TIME_WINDOW",
+        "__format": "number"
+      },
+      "locationIntervalTolerance": {
+        "__name": "API_MONITORING_LOCATION_INTERVAL_TOLERANCE",
+        "__format": "number"
+      },
+      "discordChannel": "API_MONITORING_DISCORD_CHANNEL"
     }
   },
   "map": {

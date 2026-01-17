@@ -26,6 +26,7 @@ class AuthClient extends Logger {
       event: strategy.eventLogChannelId,
       scanNext: strategy.scanNextLogChannelId,
       scanZone: strategy.scanZoneLogChannelId,
+      monitoring: strategy.monitoringLogChannelId,
     }
     this.strategy = {
       thumbnailUrl:

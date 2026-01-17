@@ -11,6 +11,7 @@ const { getSharedPvpWrapper } = require('./PvpWrapper')
 const { setCache } = require('./cache')
 const { migrate } = require('../db/migrate')
 const { Stats } = require('./Stats')
+const { SuspiciousRequestMonitor } = require('./SuspiciousRequestMonitor')
 
 const state = {
   db: new DbManager(),
@@ -19,6 +20,7 @@ const state = {
     : null,
   event: new EventManager(),
   stats: new Stats(),
+  suspiciousMonitor: new SuspiciousRequestMonitor(),
   startTimers() {
     this.event.startIntervals(this.db, this.pvp)
   },
