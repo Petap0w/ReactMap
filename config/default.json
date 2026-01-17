@@ -147,13 +147,28 @@
       "enableUserTracking": true,
       "enableLocationTracking": true,
       "enableGeographicalTracking": true,
-      "ipRequestThreshold": 500,
-      "userRequestThreshold": 1000,
-      "geographicalCoverageThreshold": 1000,
-      "repeatedLocationThreshold": 10,
-      "repeatedLocationTimeWindow": 300000,
-      "locationIntervalTolerance": 30000,
-      "discordChannel": "main"
+      "ipRequestThreshold": 2000,
+      "userRequestThreshold": 5000,
+      "geographicalCoverageThreshold": 5000,
+      "repeatedLocationThreshold": 100,
+      "repeatedLocationTimeWindow": 900000,
+      "locationIntervalTolerance": 60000,
+      "discordChannel": "monitoring",
+      "monitoredOperationNames": [
+        "PokemonIVs",
+        "PokemonIVsPVP",
+        "PokemonPVP",
+        "Raids",
+        "GymsRaids",
+        "Events",
+        "LuresEvents",
+        "QuestsEvents",
+        "InvasionsEvents",
+        "LuresQuestEvents",
+        "LuresInvasionsEvents",
+        "QuestsInvasionsEvents",
+        "LuresQuestInvasionsEvents"
+      ]
     }
   },
   "map": {
@@ -750,6 +765,7 @@
         "scanNextLogChannelId": "",
         "scanZoneLogChannelId": "",
         "eventLogChannelId": "",
+        "monitoringLogChannelId": "",
         "presence": "Map Status: Online",
         "presenceType": 3,
         "botToken": "",

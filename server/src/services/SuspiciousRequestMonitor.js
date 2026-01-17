@@ -84,7 +84,25 @@ class SuspiciousRequestMonitor extends Logger {
         true,
       ),
       discordChannel: config.getSafe('api.monitoring.discordChannel', 'main'),
+      monitoredOperationNames: config.getSafe('api.monitoring.monitoredOperationNames', []),
     }
+  }
+
+  /**
+   * Check if an endpoint/operation should be monitored
+   * @param {string} endpoint - GraphQL operation name (e.g., "Gyms", "PokemonIVs", "GymsRaids")
+   * @returns {boolean}
+   */
+  shouldMonitorEndpoint(endpoint) {
+    // If no filter configured, monitor all endpoints
+    if (
+      !this.config.monitoredOperationNames ||
+      this.config.monitoredOperationNames.length === 0
+    ) {
+      return true
+    }
+    // If filter configured, only monitor operation names in the list
+    return this.config.monitoredOperationNames.includes(endpoint)
   }
 
   /**
@@ -109,12 +127,27 @@ class SuspiciousRequestMonitor extends Logger {
    */
   calculateBboxArea(bbox) {
     const R = 6371 // Earth radius in km
-    const latDiff = (bbox.maxLat - bbox.minLat) * (Math.PI / 180)
-    const lonDiff = (bbox.maxLon - bbox.minLon) * (Math.PI / 180)
+    
+    // Handle cases where coordinates might wrap around (e.g., -180 to 180)
+    let latDiff = Math.abs(bbox.maxLat - bbox.minLat)
+    let lonDiff = Math.abs(bbox.maxLon - bbox.minLon)
+    
+    // If longitude difference is > 180, it wraps around the globe
+    if (lonDiff > 180) {
+      lonDiff = 360 - lonDiff
+    }
+    
+    // Cap latitude difference at 180 (shouldn't happen but safety check)
+    if (latDiff > 180) {
+      latDiff = 180
+    }
+    
+    const latDiffRad = latDiff * (Math.PI / 180)
+    const lonDiffRad = lonDiff * (Math.PI / 180)
     const avgLat = ((bbox.maxLat + bbox.minLat) / 2) * (Math.PI / 180)
 
-    const latDistance = R * latDiff
-    const lonDistance = R * Math.cos(avgLat) * lonDiff
+    const latDistance = R * latDiffRad
+    const lonDistance = R * Math.cos(avgLat) * lonDiffRad
 
     return latDistance * lonDistance
   }
@@ -157,6 +190,11 @@ class SuspiciousRequestMonitor extends Logger {
    */
   async trackRequest(record, event) {
     const { ip, userId, endpoint, bbox, center, category } = record
+
+    // Check if this endpoint should be monitored
+    if (!this.shouldMonitorEndpoint(endpoint)) {
+      return
+    }
 
     // 1. Check IP-based high volume requests
     if (this.config.enableIpTracking && ip !== 'unknown') {
@@ -221,6 +259,7 @@ class SuspiciousRequestMonitor extends Logger {
           type: 'HIGH_VOLUME_IP',
           severity: 'warning',
           ip,
+          endpoint: record.endpoint,
           requestCount: recentRequests.length,
           timeWindow: '1 hour',
           uniqueUsers: new Set(recentRequests.map((r) => r.userId)).size,
@@ -266,6 +305,7 @@ class SuspiciousRequestMonitor extends Logger {
           severity: 'warning',
           userId,
           username,
+          endpoint: record.endpoint,
           requestCount: recentRequests.length,
           timeWindow: '1 hour',
           topEndpoints: this.#getTopEndpoints(recentRequests),
@@ -329,7 +369,7 @@ class SuspiciousRequestMonitor extends Logger {
    * @private
    */
   async #checkGeographicalCoverage(record, event) {
-    const { userId, username, ip, bbox } = record
+    const { userId, username, ip, bbox, endpoint } = record
     const key = `coverage:${userId || ip}`
 
     const coverageHistory = this.#geographicalCoverageCache.get(key) || {
@@ -376,6 +416,7 @@ class SuspiciousRequestMonitor extends Logger {
           userId,
           username,
           ip,
+          endpoint,
           totalArea: coverageHistory.totalArea,
           requestCount: coverageHistory.requests.length,
           timeWindow: '1 hour',
@@ -509,7 +550,11 @@ class SuspiciousRequestMonitor extends Logger {
     const color = severityColors[alertData.severity] || 0x95a5a6
 
     let description = `**Type:** ${alertData.type}\n`
-    description += `**Severity:** ${alertData.severity.toUpperCase()}\n\n`
+    description += `**Severity:** ${alertData.severity.toUpperCase()}\n`
+    if (alertData.endpoint) {
+      description += `**Operation:** ${alertData.endpoint}\n`
+    }
+    description += '\n'
 
     if (alertData.userId) {
       description += `**User:** ${alertData.username} (ID: ${alertData.userId})\n`
@@ -534,6 +579,9 @@ class SuspiciousRequestMonitor extends Logger {
     }
     if (alertData.interval) {
       description += `**Interval:** ${(alertData.interval / 1000).toFixed(0)}s\n`
+    }
+    if (alertData.message) {
+      description += `\n**Details:** ${alertData.message}\n`
     }
 
     const fields = []

@@ -434,7 +434,11 @@
         "__name": "API_MONITORING_LOCATION_INTERVAL_TOLERANCE",
         "__format": "number"
       },
-      "discordChannel": "API_MONITORING_DISCORD_CHANNEL"
+      "discordChannel": "API_MONITORING_DISCORD_CHANNEL",
+      "monitoredOperationNames": {
+        "__name": "API_MONITORING_MONITORED_OPERATION_NAMES",
+        "__format": "json"
+      }
     }
   },
   "map": {

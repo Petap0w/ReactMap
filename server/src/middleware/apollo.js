@@ -96,15 +96,36 @@ function apolloMiddleware(server) {
       // Track request for monitoring (async, don't await to avoid blocking)
       if (definition?.operation === 'query' && endpoint) {
         const variables = req.body.variables || {}
-        const bbox =
-          variables.minLat !== undefined && variables.minLat !== null
-            ? {
-                minLat: variables.minLat,
-                maxLat: variables.maxLat || variables.minLat,
-                minLon: variables.minLon,
-                maxLon: variables.maxLon || variables.minLon,
-              }
-            : undefined
+        
+        // Validate bbox coordinates
+        let bbox = undefined
+        if (
+          variables.minLat !== undefined &&
+          variables.minLat !== null &&
+          variables.minLon !== undefined &&
+          variables.minLon !== null
+        ) {
+          const minLat = Number(variables.minLat)
+          const maxLat = Number(variables.maxLat ?? variables.minLat)
+          const minLon = Number(variables.minLon)
+          const maxLon = Number(variables.maxLon ?? variables.minLon)
+
+          // Validate coordinate ranges
+          const validLat = (val) => !Number.isNaN(val) && val >= -90 && val <= 90
+          const validLon = (val) => !Number.isNaN(val) && val >= -180 && val <= 180
+
+          // Check if coordinates are valid and not reversed
+          if (
+            validLat(minLat) &&
+            validLat(maxLat) &&
+            validLon(minLon) &&
+            validLon(maxLon) &&
+            minLat <= maxLat &&
+            minLon <= maxLon
+          ) {
+            bbox = { minLat, maxLat, minLon, maxLon }
+          }
+        }
 
         const center = variables.lat && variables.lon
           ? { lat: variables.lat, lon: variables.lon }
