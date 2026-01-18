@@ -845,6 +845,22 @@ const resolvers = {
       return false
     },
   },
+  Pokemon: {
+    lat: (parent, _args, { perms }) => {
+      // Return precise coordinates if user has pokemonpopup OR popupcoords permission
+      // Otherwise return rounded coordinates (~111m precision) to prevent precise scraping
+      if (perms?.pokemonpopup || perms?.popupcoords) {
+        return parent.lat
+      }
+      return parent.lat ? Number(parent.lat.toFixed(3)) : null
+    },
+    lon: (parent, _args, { perms }) => {
+      if (perms?.pokemonpopup || perms?.popupcoords) {
+        return parent.lon
+      }
+      return parent.lon ? Number(parent.lon.toFixed(3)) : null
+    },
+  },
 }
 
 module.exports = { resolvers }
