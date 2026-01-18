@@ -76,14 +76,18 @@ function apolloMiddleware(server) {
               perms[k] === true,
           ).length === 0)
 
-      if (hasAuthEnabled && hasNoUser && hasNoPerms && endpoint !== 'Locales') {
-        throw new GraphQLError('session_expired', {
-          extensions: {
-            ...errorCtx,
-            http: { status: 511 },
-            code: 'EXPIRED',
-          },
-        })
+      if (hasAuthEnabled && hasNoUser && hasNoPerms) {
+        // Allow endpoints needed for login/registration flow
+        const publicEndpoints = ['Locales', 'CustomComponent', 'CheckUsername', 'MotdCheck']
+        if (!publicEndpoints.includes(endpoint)) {
+          throw new GraphQLError('session_expired', {
+            extensions: {
+              ...errorCtx,
+              http: { status: 511 },
+              code: 'EXPIRED',
+            },
+          })
+        }
       }
 
       if (
