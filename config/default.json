@@ -173,7 +173,8 @@
         "QuestsInvasionsEvents",
         "LuresQuestInvasionsEvents"
       ]
-    }
+    },
+    "coordinateJitter": 0.001
   },
   "map": {
     "general": {

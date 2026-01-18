@@ -455,6 +455,10 @@
         "__name": "API_MONITORING_MONITORED_OPERATION_NAMES",
         "__format": "json"
       }
+    },
+    "coordinateJitter": {
+      "__name": "API_COORDINATE_JITTER",
+      "__format": "number"
     }
   },
   "map": {
