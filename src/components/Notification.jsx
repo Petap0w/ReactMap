@@ -41,12 +41,22 @@ export function Notification({
   const { t } = useTranslation()
   const [autoHideTimer, setAutoHideTimer] = React.useState(null)
 
-  const handleClose = React.useCallback(() => {
+  const handleClose = React.useCallback((event, reason) => {
+    // Prevent closing on clickaway
+    if (reason === 'clickaway') {
+      return
+    }
+    
     if (autoHideTimer) {
       clearTimeout(autoHideTimer)
       setAutoHideTimer(null)
     }
-    if (cb) cb()
+    
+    // Delay callback until after transition completes (300ms for Slide transition)
+    // This prevents resetting the alert state while the snackbar is still transitioning out
+    setTimeout(() => {
+      if (cb) cb()
+    }, 300)
   }, [cb, autoHideTimer])
 
   React.useEffect(() => {

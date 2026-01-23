@@ -6,29 +6,34 @@ import { resetAlert, useWebhookStore } from '@store/useWebhookStore'
 
 export function WebhookNotification() {
   const alert = useWebhookStore((s) => s.alert)
-  const [hasShown, setHasShown] = React.useState(false)
+  const [displayMessage, setDisplayMessage] = React.useState('')
+  const [displaySeverity, setDisplaySeverity] = React.useState('info')
+  const [isVisible, setIsVisible] = React.useState(false)
   
   React.useEffect(() => {
     if (alert.open && alert.message) {
-      setHasShown(true)
-    } else if (!alert.open && !alert.message) {
-      // Reset after transition completes (small delay to allow exit animation)
+      // Update display values when alert opens with a message
+      setDisplayMessage(alert.message)
+      setDisplaySeverity(alert.severity || 'info')
+      setIsVisible(true)
+    } else if (!alert.open && isVisible) {
+      // Keep visible during exit transition, then unmount after transition completes
       const timer = setTimeout(() => {
-        setHasShown(false)
-      }, 300) // Transition duration
+        setIsVisible(false)
+        setDisplayMessage('')
+      }, 350) // Slightly longer than transition (300ms) to ensure smooth exit
       return () => clearTimeout(timer)
     }
-  }, [alert.open, alert.message])
+  }, [alert.open, alert.message, alert.severity, isVisible])
   
-  // Only render if we've shown a message (prevents empty snackbar on initial mount)
-  // Keep mounted during transition even if message becomes empty
-  if (!hasShown) {
+  // Only render if we have a visible alert
+  if (!isVisible || !displayMessage) {
     return null
   }
   
   return (
-    <Notification open={alert.open} cb={resetAlert} severity={alert.severity}>
-      {alert.message || ''}
+    <Notification open={alert.open} cb={resetAlert} severity={displaySeverity}>
+      {displayMessage}
     </Notification>
   )
 }

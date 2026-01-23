@@ -14,24 +14,18 @@ export const useProcessError = (error) => {
 
   React.useEffect(() => {
     if (error) {
-      // eslint-disable-next-line no-console
-      console.error('useProcessError:', error)
-      // Debug: log error structure for area too large
-      if (
+      // Only log non-handled errors
+      const isAreaTooLarge =
         error?.graphQLErrors?.[0]?.message === 'query_area_too_large' ||
         error?.graphQLErrors?.[0]?.extensions?.code === 'AREA_TOO_LARGE' ||
         // @ts-ignore
         error?.networkError?.result?.errors?.[0]?.message === 'query_area_too_large' ||
         // @ts-ignore
         error?.networkError?.result?.errors?.[0]?.extensions?.code === 'AREA_TOO_LARGE'
-      ) {
+      
+      if (!isAreaTooLarge) {
         // eslint-disable-next-line no-console
-        console.log('Area too large error detected:', {
-          graphQLErrors: error.graphQLErrors,
-          networkError: error.networkError,
-          // @ts-ignore
-          networkErrorResult: error?.networkError?.result,
-        })
+        console.error(error)
       }
     }
     if (error?.networkError && 'statusCode' in error.networkError) {
