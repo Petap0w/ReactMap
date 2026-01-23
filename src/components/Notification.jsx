@@ -39,29 +39,33 @@ export function Notification({
   title,
 }) {
   const { t } = useTranslation()
-  const [alert, setAlert] = React.useState(open || false)
+  const [autoHideTimer, setAutoHideTimer] = React.useState(null)
 
   const handleClose = React.useCallback(() => {
-    setAlert(false)
+    if (autoHideTimer) {
+      clearTimeout(autoHideTimer)
+      setAutoHideTimer(null)
+    }
     if (cb) cb()
-  }, [cb])
+  }, [cb, autoHideTimer])
 
   React.useEffect(() => {
     if (open) {
-      setAlert(true)
+      // Set auto-hide timer when snackbar opens
       const timer = setTimeout(() => {
         handleClose()
       }, 5000)
-      return () => clearTimeout(timer)
-    } else {
-      // Immediately close when open becomes false to prevent duplicates
-      setAlert(false)
+      setAutoHideTimer(timer)
+      return () => {
+        clearTimeout(timer)
+        setAutoHideTimer(null)
+      }
     }
-  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open, handleClose])
 
   return (
     <Snackbar
-      open={alert}
+      open={open}
       onClose={handleClose}
       TransitionComponent={SlideTransition}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
