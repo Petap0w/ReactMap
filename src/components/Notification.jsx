@@ -47,27 +47,30 @@ export function Notification({
   }, [cb])
 
   React.useEffect(() => {
-    setAlert(open)
-
     if (open) {
+      setAlert(true)
       const timer = setTimeout(() => {
         handleClose()
       }, 5000)
       return () => clearTimeout(timer)
+    } else {
+      // Immediately close when open becomes false to prevent duplicates
+      setAlert(false)
     }
-  }, [open])
+  }, [open, handleClose])
 
   return (
     <Snackbar
       open={alert}
       onClose={handleClose}
       TransitionComponent={SlideTransition}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
     >
       <Alert
         onClose={handleClose}
         severity={severity}
         variant="filled"
-        style={alertStyle}
+        sx={{ textAlign: 'center', color: 'white' }}
       >
         {title && <AlertTitle>{t(title)}</AlertTitle>}
         {typeof i18nKey === 'string' && Array.isArray(messages)
