@@ -57,7 +57,7 @@ export function Notification({
       // Immediately close when open becomes false to prevent duplicates
       setAlert(false)
     }
-  }, [open, handleClose])
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Snackbar
