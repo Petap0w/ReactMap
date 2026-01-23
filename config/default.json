@@ -174,7 +174,11 @@
         "LuresQuestInvasionsEvents"
       ]
     },
-    "coordinateJitter": 0.001
+    "coordinateJitter": 0.001,
+    "geographicalLimits": {
+      "maxAreaKm2": 15000,
+      "extendedViewMaxAreaKm2": 30000
+    }
   },
   "map": {
     "general": {
@@ -193,6 +197,14 @@
       "geoJsonFileName": "areas.json",
       "separateDrawerActions": false,
       "attributionPrefix": "<a href='https://github.com/WatWowMap/ReactMap' target='_blank' rel='noreferrer'>ReactMap</a>",
+      "extendedView": {
+        "startLat": 0,
+        "startLon": 0,
+        "startZoom": 10,
+        "minZoom": 5,
+        "maxZoom": 20,
+        "scanAreasZoom": 10
+      },
       "menuOrder": [
         "gyms",
         "nests",

@@ -459,6 +459,10 @@
     "coordinateJitter": {
       "__name": "API_COORDINATE_JITTER",
       "__format": "number"
+    },
+    "geographicalLimits": {
+      "maxAreaKm2": "API_GEO_LIMIT_MAX_AREA_KM2",
+      "extendedViewMaxAreaKm2": "API_GEO_LIMIT_EXTENDED_MAX_AREA_KM2"
     }
   },
   "map": {
@@ -504,6 +508,32 @@
       "activeWeatherZoom": {
         "__name": "MAP_GENERAL_ACTIVE_WEATHER_ZOOM",
         "__format": "number"
+      },
+      "extendedView": {
+        "startLat": {
+          "__name": "MAP_GENERAL_EXTENDED_START_LAT",
+          "__format": "number"
+        },
+        "startLon": {
+          "__name": "MAP_GENERAL_EXTENDED_START_LON",
+          "__format": "number"
+        },
+        "startZoom": {
+          "__name": "MAP_GENERAL_EXTENDED_START_ZOOM",
+          "__format": "number"
+        },
+        "minZoom": {
+          "__name": "MAP_GENERAL_EXTENDED_MIN_ZOOM",
+          "__format": "number"
+        },
+        "maxZoom": {
+          "__name": "MAP_GENERAL_EXTENDED_MAX_ZOOM",
+          "__format": "number"
+        },
+        "scanAreasZoom": {
+          "__name": "MAP_GENERAL_EXTENDED_SCAN_AREAS_ZOOM",
+          "__format": "number"
+        }
       },
       "geoJsonFileName": "MAP_GENERAL_GEO_JSON_FILE_NAME",
       "separateDrawerActions": {

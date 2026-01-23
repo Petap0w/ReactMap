@@ -146,6 +146,43 @@ function apolloMiddleware(server) {
             minLon <= maxLon
           ) {
             bbox = { minLat, maxLat, minLon, maxLon }
+            
+            // Validate geographical area limits
+            const R = 6371 // Earth radius in km
+            let latDiff = Math.abs(bbox.maxLat - bbox.minLat)
+            let lonDiff = Math.abs(bbox.maxLon - bbox.minLon)
+            
+            // Handle longitude wrapping
+            if (lonDiff > 180) {
+              lonDiff = 360 - lonDiff
+            }
+            if (latDiff > 180) {
+              latDiff = 180
+            }
+            
+            const latDiffRad = latDiff * (Math.PI / 180)
+            const lonDiffRad = lonDiff * (Math.PI / 180)
+            const avgLat = ((bbox.maxLat + bbox.minLat) / 2) * (Math.PI / 180)
+            
+            const latDistance = R * latDiffRad
+            const lonDistance = R * Math.cos(avgLat) * lonDiffRad
+            const areaKm2 = latDistance * lonDistance
+            
+            // Get geographical limits config
+            const geoLimits = config.getSafe('api.geographicalLimits', {})
+            const maxArea = perms?.extendedView
+              ? (geoLimits.extendedViewMaxAreaKm2 || 30000)
+              : (geoLimits.maxAreaKm2 || 15000)
+            
+            if (areaKm2 > maxArea) {
+              throw new GraphQLError('query_area_too_large', {
+                extensions: {
+                  ...errorCtx,
+                  http: { status: 400 },
+                  code: 'AREA_TOO_LARGE',
+                },
+              })
+            }
           }
         }
 
