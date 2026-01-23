@@ -39,7 +39,7 @@ export function Notification({
   title,
 }) {
   const { t } = useTranslation()
-  const [autoHideTimer, setAutoHideTimer] = React.useState(null)
+  const timerRef = React.useRef(null)
 
   const handleClose = React.useCallback((event, reason) => {
     // Prevent closing on clickaway
@@ -47,9 +47,9 @@ export function Notification({
       return
     }
     
-    if (autoHideTimer) {
-      clearTimeout(autoHideTimer)
-      setAutoHideTimer(null)
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
     }
     
     // Delay callback until after transition completes (300ms for Slide transition)
@@ -57,18 +57,19 @@ export function Notification({
     setTimeout(() => {
       if (cb) cb()
     }, 300)
-  }, [cb, autoHideTimer])
+  }, [cb])
 
   React.useEffect(() => {
     if (open) {
       // Set auto-hide timer when snackbar opens
-      const timer = setTimeout(() => {
-        handleClose()
+      timerRef.current = setTimeout(() => {
+        handleClose(null, 'timeout')
       }, 5000)
-      setAutoHideTimer(timer)
       return () => {
-        clearTimeout(timer)
-        setAutoHideTimer(null)
+        if (timerRef.current) {
+          clearTimeout(timerRef.current)
+          timerRef.current = null
+        }
       }
     }
   }, [open, handleClose])
