@@ -5,11 +5,17 @@ import { useStorage } from '@store/useStorage'
 /** @param {keyof import('@store/useStorage').UseStorage & keyof import('@store/useMemory').UseMemory} key */
 const resetState = (key) => {
   const state = useMemory.getState()[key]
+  const { config } = useMemory.getState()
   useStorage.setState({
     [key]:
       key === 'settings'
         ? Object.fromEntries(
-            Object.entries(state).map(([k, v]) => [k, Object.keys(v)[0]]),
+            Object.entries(state).map(([k, v]) => [
+              k,
+              config?.misc?.[k] && config.misc[k] in v
+                ? config.misc[k]
+                : Object.keys(v)[0],
+            ]),
           )
         : structuredClone(state),
   })
