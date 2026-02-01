@@ -32,40 +32,50 @@ const BannerWrapper = styled(Box)({
   justifyContent: 'flex-end',
 })
 
-const BannerPanel = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'backgroundColor' && prop !== 'fabHeight' && prop !== 'fabWidth',
-})(({ theme, expanded, backgroundColor, fabHeight, fabWidth }) => ({
-  position: 'absolute',
-  right: fabWidth,
-  display: 'flex',
-  alignItems: 'center',
-  backgroundColor: backgroundColor || theme.palette.background.paper,
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: theme.shadows[4],
-  paddingRight: theme.spacing(1),
+const ExpandedFab = styled(Fab, {
+  shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabHeight' && prop !== 'fabWidth',
+})(({ theme, expanded, fabHeight, fabWidth }) => ({
+  position: 'relative',
   height: fabHeight,
-  maxWidth: expanded ? 350 : 0,
-  width: expanded ? 'auto' : 0,
-  opacity: expanded ? 1 : 0,
-  overflow: 'hidden',
-  transition: theme.transitions.create(['maxWidth', 'width', 'opacity'], {
+  width: expanded ? 'auto' : fabWidth,
+  minWidth: fabWidth,
+  maxWidth: expanded ? 350 : fabWidth,
+  padding: expanded ? theme.spacing(0, 1, 0, 0) : 0,
+  transition: theme.transitions.create(['width', 'maxWidth', 'padding'], {
     duration: 400,
     easing: theme.transitions.easing.easeInOut,
   }),
-  pointerEvents: expanded ? 'auto' : 'none',
+  overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
-    maxWidth: expanded ? 280 : 0,
+    maxWidth: expanded ? 280 : fabWidth,
   },
 }))
+
+const IconContainer = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+})
 
 const ContentContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  padding: theme.spacing(1, 1.5),
+  padding: theme.spacing(1, 0, 1, 1.5),
   minWidth: 0,
   flex: 1,
   overflow: 'hidden',
   justifyContent: 'center',
+  opacity: 0,
+  width: 0,
+  transition: theme.transitions.create(['opacity', 'width'], {
+    duration: 400,
+    easing: theme.transitions.easing.easeInOut,
+  }),
+  '&.expanded': {
+    opacity: 1,
+    width: 'auto',
+  },
 }))
 
 const TitleText = styled(Typography)(({ theme }) => ({
@@ -152,22 +162,51 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
 
   return (
     <BannerWrapper>
-      <BannerPanel
+      <ExpandedFab
+        size={fabSize}
+        color="secondary"
         expanded={isExpanded}
-        backgroundColor={banner.backgroundColor}
         fabHeight={fabHeight}
         fabWidth={fabWidth}
         onClick={handleClick}
         sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
           cursor: banner.href ? 'pointer' : 'default',
-          '&:hover': banner.href
-            ? {
-                boxShadow: (theme) => theme.shadows[8],
-              }
-            : {},
+          backgroundColor: banner.backgroundColor || undefined,
+          color: banner.textColor || undefined,
+          '&:hover': {
+            backgroundColor: banner.backgroundColor || undefined,
+            boxShadow: (theme) => theme.shadows[8],
+          },
         }}
       >
-        <ContentContainer>
+        <IconContainer
+          sx={{
+            width: fabWidth,
+            height: fabHeight,
+          }}
+        >
+          {isImageIcon ? (
+            <img
+              src={banner.icon}
+              alt={banner.title}
+              style={{
+                width: fabHeight,
+                height: fabHeight,
+                objectFit: 'contain',
+              }}
+            />
+          ) : (
+            <I
+              className={banner.icon}
+              size={iconSize}
+              color={banner.textColor || 'white'}
+            />
+          )}
+        </IconContainer>
+        <ContentContainer className={isExpanded ? 'expanded' : ''}>
           <TitleText
             variant="body2"
             sx={{
@@ -185,40 +224,7 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
             dangerouslySetInnerHTML={{ __html: banner.description || '' }}
           />
         </ContentContainer>
-      </BannerPanel>
-      <Fab
-        size={fabSize}
-        color="secondary"
-        onClick={handleClick}
-        sx={{
-          position: 'relative',
-          zIndex: 1,
-          backgroundColor: banner.backgroundColor || undefined,
-          color: banner.textColor || undefined,
-          '&:hover': {
-            backgroundColor: banner.backgroundColor || undefined,
-            boxShadow: (theme) => theme.shadows[8],
-          },
-        }}
-      >
-        {isImageIcon ? (
-          <img
-            src={banner.icon}
-            alt={banner.title}
-            style={{
-              width: fabHeight,
-              height: fabHeight,
-              objectFit: 'contain',
-            }}
-          />
-        ) : (
-          <I
-            className={banner.icon}
-            size={iconSize}
-            color={banner.textColor || 'white'}
-          />
-        )}
-      </Fab>
+      </ExpandedFab>
     </BannerWrapper>
   )
 }
