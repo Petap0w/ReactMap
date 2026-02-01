@@ -27,25 +27,34 @@ const StyledBannerStack = styled(Stack)(({ theme }) => ({
 
 const BannerWrapper = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabWidth' && prop !== 'measuredWidth',
-})(({ theme, expanded, fabWidth, measuredWidth }) => ({
-  position: 'relative',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-start', // Align container to left so icon (leftmost part) is visible
-  width: expanded ? `${measuredWidth}px` : `${fabWidth}px`,
-  maxWidth: expanded ? 300 : `${fabWidth}px`, // Reduced from 350 to 300
-  overflow: 'hidden',
-  backgroundColor: 'transparent',
-  border: 'none',
-  boxShadow: 'none',
-  transition: theme.transitions.create(['width', 'maxWidth'], {
-    duration: 3000,
-    easing: theme.transitions.easing.easeInOut,
-  }),
-  [theme.breakpoints.down('sm')]: {
-    maxWidth: expanded ? 240 : `${fabWidth}px`, // Reduced from 280 to 240
-  },
-}))
+})(({ theme, expanded, fabWidth, measuredWidth }) => {
+  // Use measuredWidth when expanded, fabWidth when collapsed
+  // This ensures smooth transition in both directions
+  // Always use measuredWidth if it's been set (greater than fabWidth), otherwise use fabWidth
+  // This way the width transitions smoothly from measuredWidth to fabWidth when collapsing
+  const currentWidth = measuredWidth > fabWidth ? measuredWidth : fabWidth
+  const targetWidth = expanded ? currentWidth : fabWidth
+  
+  return {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start', // Align container to left so icon (leftmost part) is visible
+    width: `${targetWidth}px`,
+    maxWidth: expanded ? 300 : `${fabWidth}px`, // Reduced from 350 to 300
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
+    border: 'none',
+    boxShadow: 'none',
+    transition: theme.transitions.create(['width', 'maxWidth'], {
+      duration: 3000,
+      easing: theme.transitions.easing.easeInOut,
+    }),
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: expanded ? 240 : `${fabWidth}px`, // Reduced from 280 to 240
+    },
+  }
+})
 
 const BannerContainer = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabHeight' && prop !== 'fabWidth',
@@ -135,15 +144,28 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
   const [isExpanded, setIsExpanded] = React.useState(false)
   const timersRef = React.useRef([])
   const containerRef = React.useRef(null)
+  const measuredWidthRef = React.useRef(fabWidth)
   const [measuredWidth, setMeasuredWidth] = React.useState(fabWidth)
 
-  // Measure the container width when expanded
+  // Measure the container width when expanded and persist it
+  // This measurement persists even when collapsing, allowing smooth transition
   React.useEffect(() => {
     if (isExpanded && containerRef.current) {
-      const width = containerRef.current.scrollWidth
-      setMeasuredWidth(width)
+      // Use a small delay to ensure the container has fully expanded
+      const measureTimer = setTimeout(() => {
+        if (containerRef.current) {
+          const width = containerRef.current.scrollWidth
+          // Only update if we got a valid measurement
+          if (width > fabWidth) {
+            measuredWidthRef.current = width
+            setMeasuredWidth(width)
+          }
+        }
+      }, 100) // Delay to ensure DOM has fully updated
+      
+      return () => clearTimeout(measureTimer)
     }
-  }, [isExpanded])
+  }, [isExpanded, fabWidth])
 
   React.useEffect(() => {
     const cycleBanner = () => {
