@@ -33,10 +33,10 @@ const BannerWrapper = styled(Box)({
 })
 
 const BannerPanel = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'backgroundColor' && prop !== 'fabHeight',
-})(({ theme, expanded, backgroundColor, fabHeight }) => ({
+  shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'backgroundColor' && prop !== 'fabHeight' && prop !== 'fabWidth',
+})(({ theme, expanded, backgroundColor, fabHeight, fabWidth }) => ({
   position: 'absolute',
-  right: 0,
+  right: fabWidth,
   display: 'flex',
   alignItems: 'center',
   backgroundColor: backgroundColor || theme.palette.background.paper,
@@ -103,9 +103,10 @@ const DescriptionText = styled(Typography)(({ theme }) => ({
  *   fabSize: 'small' | 'large'
  *   iconSize: 'small' | 'medium'
  *   fabHeight: number
+ *   fabWidth: number
  * }} props
  */
-function BannerItem({ banner, fabSize, iconSize, fabHeight }) {
+function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
   const [isExpanded, setIsExpanded] = React.useState(false)
   const timersRef = React.useRef([])
 
@@ -155,6 +156,7 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight }) {
         expanded={isExpanded}
         backgroundColor={banner.backgroundColor}
         fabHeight={fabHeight}
+        fabWidth={fabWidth}
         onClick={handleClick}
         sx={{
           cursor: banner.href ? 'pointer' : 'default',
@@ -204,8 +206,8 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight }) {
             src={banner.icon}
             alt={banner.title}
             style={{
-              width: iconSize === 'small' ? 20 : 24,
-              height: iconSize === 'small' ? 20 : 24,
+              width: fabHeight,
+              height: fabHeight,
               objectFit: 'contain',
             }}
           />
@@ -235,8 +237,9 @@ export function DynamicBanners() {
 
   const fabSize = isMobile ? 'small' : 'large'
   const iconSize = isMobile ? 'small' : 'medium'
-  // Fab heights: small = 40px, large = 56px
+  // Fab dimensions: small = 40px, large = 56px
   const fabHeight = isMobile ? 40 : 56
+  const fabWidth = isMobile ? 40 : 56
 
   React.useEffect(() => {
     if (ref.current) {
@@ -257,6 +260,7 @@ export function DynamicBanners() {
           fabSize={fabSize}
           iconSize={iconSize}
           fabHeight={fabHeight}
+          fabWidth={fabWidth}
         />
       ))}
     </StyledBannerStack>
