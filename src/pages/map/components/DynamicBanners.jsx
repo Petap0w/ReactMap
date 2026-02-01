@@ -27,25 +27,32 @@ const StyledBannerStack = styled(Stack)(({ theme }) => ({
 
 const BannerWrapper = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabWidth' && prop !== 'targetWidth',
-})(({ theme, expanded, fabWidth, targetWidth }) => ({
-  position: 'relative',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-start', // Align container to left so icon (leftmost part) is visible
-  width: `${targetWidth}px`,
-  maxWidth: expanded ? 300 : `${fabWidth}px`, // Reduced from 350 to 300
-  overflow: 'hidden',
-  backgroundColor: 'transparent',
-  border: 'none',
-  boxShadow: 'none',
-  transition: theme.transitions.create(['width', 'maxWidth'], {
-    duration: 3000,
-    easing: theme.transitions.easing.easeInOut,
-  }),
-  [theme.breakpoints.down('sm')]: {
-    maxWidth: expanded ? 240 : `${fabWidth}px`, // Reduced from 280 to 240
-  },
-}))
+})(({ theme, expanded, fabWidth, targetWidth }) => {
+  // Calculate maxWidth based on targetWidth to ensure smooth transitions
+  // When expanded, allow up to 300px, when collapsed, use fabWidth
+  const maxWidthValue = expanded ? 300 : Math.max(targetWidth, fabWidth)
+  
+  return {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start', // Align container to left so icon (leftmost part) is visible
+    width: `${targetWidth}px`,
+    maxWidth: `${maxWidthValue}px`,
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
+    border: 'none',
+    boxShadow: 'none',
+    // Transition only width, not maxWidth, to avoid conflicts
+    transition: theme.transitions.create(['width'], {
+      duration: 3000,
+      easing: theme.transitions.easing.easeInOut,
+    }),
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: expanded ? 240 : `${Math.max(targetWidth, fabWidth)}px`,
+    },
+  }
+})
 
 const BannerContainer = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabHeight' && prop !== 'fabWidth',
@@ -176,15 +183,29 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
   React.useEffect(() => {
     // Only update targetWidth when the expanded state actually changes
     if (previousExpandedRef.current !== isExpanded) {
+      const wasExpanded = previousExpandedRef.current
       previousExpandedRef.current = isExpanded
       
       if (isExpanded) {
         // When expanding, targetWidth will be set by the measurement effect
         // Keep current targetWidth until measurement completes
-      } else {
-        // When collapsing, transition from current targetWidth to fabWidth
-        // This ensures smooth transition - the width will animate from measuredWidth to fabWidth
-        setTargetWidth(fabWidth)
+      } else if (wasExpanded) {
+        // When collapsing from expanded state, transition from current targetWidth to fabWidth
+        // The key is that targetWidth should already be set to measuredWidth from the measurement effect
+        // So we just need to set it to fabWidth and let CSS transition handle the animation
+        // Use a tiny delay to ensure the DOM has the current width value before transitioning
+        const currentMeasuredWidth = measuredWidthRef.current
+        if (currentMeasuredWidth > fabWidth) {
+          // Ensure targetWidth is set to the measured width first (in case it wasn't)
+          // Then transition to fabWidth
+          setTargetWidth(currentMeasuredWidth)
+          // Use setTimeout to ensure the width is set before transitioning
+          setTimeout(() => {
+            setTargetWidth(fabWidth)
+          }, 10)
+        } else {
+          setTargetWidth(fabWidth)
+        }
       }
     }
   }, [isExpanded, fabWidth])
