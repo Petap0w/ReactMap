@@ -41,6 +41,7 @@ const ExpandedFab = styled(Fab, {
   minWidth: `${fabWidth}px`,
   maxWidth: expanded ? 350 : `${fabWidth}px`,
   padding: '0 !important',
+  margin: '0 !important',
   transition: theme.transitions.create(['width', 'maxWidth'], {
     duration: 600,
     easing: theme.transitions.easing.easeInOut,
@@ -48,10 +49,15 @@ const ExpandedFab = styled(Fab, {
   overflow: 'hidden',
   display: 'flex !important',
   flexDirection: 'row !important',
-  alignItems: 'center',
-  justifyContent: 'flex-start',
+  alignItems: 'center !important',
+  justifyContent: 'flex-start !important',
+  transform: 'none !important',
+  writingMode: 'horizontal-tb !important',
   [theme.breakpoints.down('sm')]: {
     maxWidth: expanded ? 280 : `${fabWidth}px`,
+  },
+  '& > *': {
+    transform: 'none !important',
   },
 }))
 
@@ -60,9 +66,14 @@ const IconContainer = styled(Box)(({ fabWidth, fabHeight }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   flexShrink: 0,
-  width: fabWidth,
-  height: fabHeight,
+  width: `${fabWidth}px`,
+  height: `${fabHeight}px`,
+  minWidth: `${fabWidth}px`,
+  minHeight: `${fabHeight}px`,
+  maxWidth: `${fabWidth}px`,
+  maxHeight: `${fabHeight}px`,
   position: 'relative',
+  transform: 'none',
 }))
 
 const ContentContainer = styled(Box)(({ theme }) => ({
@@ -76,6 +87,8 @@ const ContentContainer = styled(Box)(({ theme }) => ({
   opacity: 0,
   width: 0,
   maxWidth: 0,
+  transform: 'none',
+  writingMode: 'horizontal-tb',
   transition: theme.transitions.create(['opacity', 'width', 'maxWidth'], {
     duration: 600,
     easing: theme.transitions.easing.easeInOut,
