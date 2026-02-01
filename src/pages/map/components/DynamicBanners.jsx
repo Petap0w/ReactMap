@@ -36,7 +36,7 @@ const BannerWrapper = styled(Box, {
   maxWidth: expanded ? 350 : `${fabWidth}px`,
   overflow: 'hidden',
   transition: theme.transitions.create(['width', 'maxWidth'], {
-    duration: 1200,
+    duration: 3000,
     easing: theme.transitions.easing.easeInOut,
   }),
   [theme.breakpoints.down('sm')]: {
@@ -59,7 +59,7 @@ const BannerContainer = styled(Box, {
   // When expanded: wrapper expands, shows full container (icon + text)
   backgroundColor: 'transparent', // Transparent so icon shape is visible when collapsed
   transition: theme.transitions.create(['maxWidth'], {
-    duration: 1200,
+    duration: 3000,
     easing: theme.transitions.easing.easeInOut,
   }),
   [theme.breakpoints.down('sm')]: {
