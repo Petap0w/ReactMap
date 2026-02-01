@@ -32,14 +32,18 @@ const BannerWrapper = styled(Box, {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'flex-start', // Align container to left so icon (leftmost part) is visible
-  width: expanded ? 'auto' : `${fabWidth}px`,
+  width: expanded ? '350px' : `${fabWidth}px`,
   maxWidth: expanded ? 350 : `${fabWidth}px`,
   overflow: 'hidden',
+  backgroundColor: 'transparent',
+  border: 'none',
+  boxShadow: 'none',
   transition: theme.transitions.create(['width', 'maxWidth'], {
     duration: 3000,
     easing: theme.transitions.easing.easeInOut,
   }),
   [theme.breakpoints.down('sm')]: {
+    width: expanded ? '280px' : `${fabWidth}px`,
     maxWidth: expanded ? 280 : `${fabWidth}px`,
   },
 }))
@@ -57,7 +61,11 @@ const BannerContainer = styled(Box, {
   // No transform needed - wrapper width will clip the container
   // When collapsed: wrapper is 40px, shows only leftmost 40px (icon)
   // When expanded: wrapper expands, shows full container (icon + text)
-  backgroundColor: 'transparent', // Transparent so icon shape is visible when collapsed
+  backgroundColor: 'transparent',
+  border: 'none',
+  boxShadow: 'none',
+  padding: 0,
+  margin: 0,
   transition: theme.transitions.create(['maxWidth'], {
     duration: 3000,
     easing: theme.transitions.easing.easeInOut,
