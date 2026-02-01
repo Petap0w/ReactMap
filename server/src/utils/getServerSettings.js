@@ -52,6 +52,7 @@ function getServerSettings(req) {
       donationPage: undefined,
       messageOfTheDay: undefined,
       customFloatingIcons: undefined,
+      customBanners: undefined,
     },
     authentication: {
       loggedIn: !!req.user,

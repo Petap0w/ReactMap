@@ -321,6 +321,7 @@
       "enableStationPopupCoordsSelector": false,
       "enableTappablePopupCoordsSelector": false,
       "customFloatingIcons": [],
+      "customBanners": [],
       "expandAllScanAreas": false,
       "enableRouteDownload": false
     },
