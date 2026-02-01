@@ -36,7 +36,7 @@ const BannerWrapper = styled(Box, {
   maxWidth: expanded ? 350 : `${fabWidth}px`,
   overflow: 'hidden',
   transition: theme.transitions.create(['width', 'maxWidth'], {
-    duration: 600,
+    duration: 1200,
     easing: theme.transitions.easing.easeInOut,
   }),
   [theme.breakpoints.down('sm')]: {
@@ -57,8 +57,9 @@ const BannerContainer = styled(Box, {
   // No transform needed - wrapper width will clip the container
   // When collapsed: wrapper is 40px, shows only leftmost 40px (icon)
   // When expanded: wrapper expands, shows full container (icon + text)
+  backgroundColor: 'transparent', // Transparent so icon shape is visible when collapsed
   transition: theme.transitions.create(['maxWidth'], {
-    duration: 600,
+    duration: 1200,
     easing: theme.transitions.easing.easeInOut,
   }),
   [theme.breakpoints.down('sm')]: {
@@ -71,7 +72,7 @@ const TextBanner = styled(Box, {
 })(({ theme, fabHeight }) => ({
   display: 'flex',
   flexDirection: 'column',
-  padding: theme.spacing(1, 1.5, 1, 1),
+  padding: theme.spacing(0.5, 1.5, 0.5, 1), // Reduced vertical padding to prevent text cutoff
   height: `${fabHeight}px`,
   backgroundColor: 'inherit',
   borderRadius: theme.shape.borderRadius,
@@ -80,6 +81,9 @@ const TextBanner = styled(Box, {
   minWidth: 0,
   whiteSpace: 'nowrap',
   marginRight: theme.spacing(0.5),
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(0.25, 1, 0.25, 0.75), // Even less padding on mobile
+  },
 }))
 
 const TitleText = styled(Typography)(({ theme }) => ({
@@ -170,9 +174,6 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
         expanded={isExpanded}
         fabHeight={fabHeight}
         fabWidth={fabWidth}
-        sx={{
-          backgroundColor: banner.backgroundColor || undefined,
-        }}
       >
         <Fab
           size={fabSize}
