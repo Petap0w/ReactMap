@@ -36,45 +36,54 @@ const ExpandedFab = styled(Fab, {
   shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabHeight' && prop !== 'fabWidth',
 })(({ theme, expanded, fabHeight, fabWidth }) => ({
   position: 'relative',
-  height: fabHeight,
-  width: expanded ? 'auto' : fabWidth,
-  minWidth: fabWidth,
-  maxWidth: expanded ? 350 : fabWidth,
-  padding: expanded ? theme.spacing(0, 1, 0, 0) : 0,
-  transition: theme.transitions.create(['width', 'maxWidth', 'padding'], {
-    duration: 400,
+  height: `${fabHeight}px !important`,
+  width: expanded ? 'auto' : `${fabWidth}px`,
+  minWidth: `${fabWidth}px`,
+  maxWidth: expanded ? 350 : `${fabWidth}px`,
+  padding: '0 !important',
+  transition: theme.transitions.create(['width', 'maxWidth'], {
+    duration: 600,
     easing: theme.transitions.easing.easeInOut,
   }),
   overflow: 'hidden',
+  display: 'flex !important',
+  flexDirection: 'row !important',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
   [theme.breakpoints.down('sm')]: {
-    maxWidth: expanded ? 280 : fabWidth,
+    maxWidth: expanded ? 280 : `${fabWidth}px`,
   },
 }))
 
-const IconContainer = styled(Box)({
+const IconContainer = styled(Box)(({ fabWidth, fabHeight }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   flexShrink: 0,
-})
+  width: fabWidth,
+  height: fabHeight,
+  position: 'relative',
+}))
 
 const ContentContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  padding: theme.spacing(1, 0, 1, 1.5),
+  padding: theme.spacing(1, 1.5, 1, 1),
   minWidth: 0,
   flex: 1,
   overflow: 'hidden',
   justifyContent: 'center',
   opacity: 0,
   width: 0,
-  transition: theme.transitions.create(['opacity', 'width'], {
-    duration: 400,
+  maxWidth: 0,
+  transition: theme.transitions.create(['opacity', 'width', 'maxWidth'], {
+    duration: 600,
     easing: theme.transitions.easing.easeInOut,
   }),
   '&.expanded': {
     opacity: 1,
     width: 'auto',
+    maxWidth: 'none',
   },
 }))
 
@@ -170,9 +179,6 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
         fabWidth={fabWidth}
         onClick={handleClick}
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
           cursor: banner.href ? 'pointer' : 'default',
           backgroundColor: banner.backgroundColor || undefined,
           color: banner.textColor || undefined,
@@ -182,12 +188,7 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
           },
         }}
       >
-        <IconContainer
-          sx={{
-            width: fabWidth,
-            height: fabHeight,
-          }}
-        >
+        <IconContainer fabWidth={fabWidth} fabHeight={fabHeight}>
           {isImageIcon ? (
             <img
               src={banner.icon}
