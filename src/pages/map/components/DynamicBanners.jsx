@@ -31,7 +31,7 @@ const BannerWrapper = styled(Box, {
   position: 'relative',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'flex-end',
+  justifyContent: 'flex-start', // Align container to left so icon (leftmost part) is visible
   width: expanded ? 'auto' : `${fabWidth}px`,
   maxWidth: expanded ? 350 : `${fabWidth}px`,
   overflow: 'hidden',
@@ -44,24 +44,34 @@ const BannerWrapper = styled(Box, {
   },
 }))
 
-const BannerContainer = styled(Box)(({ fabHeight }) => ({
+const BannerContainer = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabHeight' && prop !== 'fabWidth',
+})(({ theme, expanded, fabHeight, fabWidth }) => ({
   position: 'relative',
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
   height: `${fabHeight}px`,
   width: 'auto',
+  maxWidth: expanded ? 350 : 'none',
+  // No transform needed - wrapper width will clip the container
+  // When collapsed: wrapper is 40px, shows only leftmost 40px (icon)
+  // When expanded: wrapper expands, shows full container (icon + text)
+  transition: theme.transitions.create(['maxWidth'], {
+    duration: 600,
+    easing: theme.transitions.easing.easeInOut,
+  }),
+  [theme.breakpoints.down('sm')]: {
+    maxWidth: expanded ? 280 : 'none',
+  },
 }))
 
-
 const TextBanner = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'fabHeight' && prop !== 'fabWidth',
-})(({ theme, fabHeight, fabWidth }) => ({
-  position: 'absolute',
-  right: `${fabWidth - 20}px`, // 20px to the left of icon's left edge (icon is at right: 0)
+  shouldForwardProp: (prop) => prop !== 'fabHeight',
+})(({ theme, fabHeight }) => ({
   display: 'flex',
   flexDirection: 'column',
-  padding: theme.spacing(1, 1.5, 1, 3.125), // ~25px left padding (3.125 * 8px = 25px)
+  padding: theme.spacing(1, 1.5, 1, 1),
   height: `${fabHeight}px`,
   backgroundColor: 'inherit',
   borderRadius: theme.shape.borderRadius,
@@ -69,6 +79,7 @@ const TextBanner = styled(Box, {
   justifyContent: 'center',
   minWidth: 0,
   whiteSpace: 'nowrap',
+  marginRight: theme.spacing(0.5),
 }))
 
 const TitleText = styled(Typography)(({ theme }) => ({
@@ -155,45 +166,19 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
 
   return (
     <BannerWrapper expanded={isExpanded} fabWidth={fabWidth}>
-      <BannerContainer fabHeight={fabHeight}>
-        <TextBanner
-          fabHeight={fabHeight}
-          fabWidth={fabWidth}
-          sx={{
-            backgroundColor: banner.backgroundColor || undefined,
-            cursor: banner.href ? 'pointer' : 'default',
-            '&:hover': banner.href
-              ? {
-                  boxShadow: (theme) => theme.shadows[8],
-                }
-              : {},
-          }}
-          onClick={handleClick}
-        >
-          <TitleText
-            variant="body2"
-            sx={{
-              color: banner.textColor || 'inherit',
-            }}
-          >
-            {banner.title}
-          </TitleText>
-          <DescriptionText
-            variant="body2"
-            component="div"
-            sx={{
-              color: banner.textColor || 'inherit',
-            }}
-            dangerouslySetInnerHTML={{ __html: banner.description || '' }}
-          />
-        </TextBanner>
+      <BannerContainer
+        expanded={isExpanded}
+        fabHeight={fabHeight}
+        fabWidth={fabWidth}
+        sx={{
+          backgroundColor: banner.backgroundColor || undefined,
+        }}
+      >
         <Fab
           size={fabSize}
           color="secondary"
           onClick={handleClick}
           sx={{
-            position: 'relative',
-            zIndex: 1,
             flexShrink: 0,
             cursor: banner.href ? 'pointer' : 'default',
             backgroundColor: banner.backgroundColor || undefined,
@@ -222,6 +207,36 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
             />
           )}
         </Fab>
+        <TextBanner
+          fabHeight={fabHeight}
+          sx={{
+            backgroundColor: banner.backgroundColor || undefined,
+            cursor: banner.href ? 'pointer' : 'default',
+            '&:hover': banner.href
+              ? {
+                  boxShadow: (theme) => theme.shadows[8],
+                }
+              : {},
+          }}
+          onClick={handleClick}
+        >
+          <TitleText
+            variant="body2"
+            sx={{
+              color: banner.textColor || 'inherit',
+            }}
+          >
+            {banner.title}
+          </TitleText>
+          <DescriptionText
+            variant="body2"
+            component="div"
+            sx={{
+              color: banner.textColor || 'inherit',
+            }}
+            dangerouslySetInnerHTML={{ __html: banner.description || '' }}
+          />
+        </TextBanner>
       </BannerContainer>
     </BannerWrapper>
   )
