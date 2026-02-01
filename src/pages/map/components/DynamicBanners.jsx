@@ -25,79 +25,50 @@ const StyledBannerStack = styled(Stack)(({ theme }) => ({
   },
 }))
 
-const BannerWrapper = styled(Box)({
+const BannerWrapper = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabWidth',
+})(({ theme, expanded, fabWidth }) => ({
   position: 'relative',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'flex-end',
-})
-
-const ExpandedFab = styled(Fab, {
-  shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabHeight' && prop !== 'fabWidth',
-})(({ theme, expanded, fabHeight, fabWidth }) => ({
-  position: 'relative',
-  height: `${fabHeight}px !important`,
   width: expanded ? 'auto' : `${fabWidth}px`,
-  minWidth: `${fabWidth}px`,
   maxWidth: expanded ? 350 : `${fabWidth}px`,
-  padding: '0 !important',
-  margin: '0 !important',
+  overflow: 'hidden',
   transition: theme.transitions.create(['width', 'maxWidth'], {
     duration: 600,
     easing: theme.transitions.easing.easeInOut,
   }),
-  overflow: 'hidden',
-  display: 'flex !important',
-  flexDirection: 'row !important',
-  alignItems: 'center !important',
-  justifyContent: 'flex-start !important',
-  transform: 'none !important',
-  writingMode: 'horizontal-tb !important',
   [theme.breakpoints.down('sm')]: {
     maxWidth: expanded ? 280 : `${fabWidth}px`,
   },
-  '& > *': {
-    transform: 'none !important',
-  },
 }))
 
-const IconContainer = styled(Box)(({ fabWidth, fabHeight }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexShrink: 0,
-  width: `${fabWidth}px`,
-  height: `${fabHeight}px`,
-  minWidth: `${fabWidth}px`,
-  minHeight: `${fabHeight}px`,
-  maxWidth: `${fabWidth}px`,
-  maxHeight: `${fabHeight}px`,
+const BannerContainer = styled(Box)(({ fabHeight }) => ({
   position: 'relative',
-  transform: 'none',
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  height: `${fabHeight}px`,
+  width: 'auto',
 }))
 
-const ContentContainer = styled(Box)(({ theme }) => ({
+
+const TextBanner = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'fabHeight' && prop !== 'fabWidth',
+})(({ theme, fabHeight, fabWidth }) => ({
+  position: 'absolute',
+  right: `${fabWidth - 20}px`, // 20px to the left of icon's left edge (icon is at right: 0)
   display: 'flex',
   flexDirection: 'column',
-  padding: theme.spacing(1, 1.5, 1, 1),
-  minWidth: 0,
-  flex: 1,
-  overflow: 'hidden',
+  padding: theme.spacing(1, 1.5, 1, 3.125), // ~25px left padding (3.125 * 8px = 25px)
+  height: `${fabHeight}px`,
+  backgroundColor: 'inherit',
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.shadows[4],
   justifyContent: 'center',
-  opacity: 0,
-  width: 0,
-  maxWidth: 0,
-  transform: 'none',
-  writingMode: 'horizontal-tb',
-  transition: theme.transitions.create(['opacity', 'width', 'maxWidth'], {
-    duration: 600,
-    easing: theme.transitions.easing.easeInOut,
-  }),
-  '&.expanded': {
-    opacity: 1,
-    width: 'auto',
-    maxWidth: 'none',
-  },
+  minWidth: 0,
+  whiteSpace: 'nowrap',
 }))
 
 const TitleText = styled(Typography)(({ theme }) => ({
@@ -183,25 +154,56 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
   const isImageIcon = banner.icon?.startsWith('http')
 
   return (
-    <BannerWrapper>
-      <ExpandedFab
-        size={fabSize}
-        color="secondary"
-        expanded={isExpanded}
-        fabHeight={fabHeight}
-        fabWidth={fabWidth}
-        onClick={handleClick}
-        sx={{
-          cursor: banner.href ? 'pointer' : 'default',
-          backgroundColor: banner.backgroundColor || undefined,
-          color: banner.textColor || undefined,
-          '&:hover': {
+    <BannerWrapper expanded={isExpanded} fabWidth={fabWidth}>
+      <BannerContainer fabHeight={fabHeight}>
+        <TextBanner
+          fabHeight={fabHeight}
+          fabWidth={fabWidth}
+          sx={{
             backgroundColor: banner.backgroundColor || undefined,
-            boxShadow: (theme) => theme.shadows[8],
-          },
-        }}
-      >
-        <IconContainer fabWidth={fabWidth} fabHeight={fabHeight}>
+            cursor: banner.href ? 'pointer' : 'default',
+            '&:hover': banner.href
+              ? {
+                  boxShadow: (theme) => theme.shadows[8],
+                }
+              : {},
+          }}
+          onClick={handleClick}
+        >
+          <TitleText
+            variant="body2"
+            sx={{
+              color: banner.textColor || 'inherit',
+            }}
+          >
+            {banner.title}
+          </TitleText>
+          <DescriptionText
+            variant="body2"
+            component="div"
+            sx={{
+              color: banner.textColor || 'inherit',
+            }}
+            dangerouslySetInnerHTML={{ __html: banner.description || '' }}
+          />
+        </TextBanner>
+        <Fab
+          size={fabSize}
+          color="secondary"
+          onClick={handleClick}
+          sx={{
+            position: 'relative',
+            zIndex: 1,
+            flexShrink: 0,
+            cursor: banner.href ? 'pointer' : 'default',
+            backgroundColor: banner.backgroundColor || undefined,
+            color: banner.textColor || undefined,
+            '&:hover': {
+              backgroundColor: banner.backgroundColor || undefined,
+              boxShadow: (theme) => theme.shadows[8],
+            },
+          }}
+        >
           {isImageIcon ? (
             <img
               src={banner.icon}
@@ -219,26 +221,8 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
               color={banner.textColor || 'white'}
             />
           )}
-        </IconContainer>
-        <ContentContainer className={isExpanded ? 'expanded' : ''}>
-          <TitleText
-            variant="body2"
-            sx={{
-              color: banner.textColor || 'inherit',
-            }}
-          >
-            {banner.title}
-          </TitleText>
-          <DescriptionText
-            variant="body2"
-            component="div"
-            sx={{
-              color: banner.textColor || 'inherit',
-            }}
-            dangerouslySetInnerHTML={{ __html: banner.description || '' }}
-          />
-        </ContentContainer>
-      </ExpandedFab>
+        </Fab>
+      </BannerContainer>
     </BannerWrapper>
   )
 }
