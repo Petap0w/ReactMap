@@ -26,14 +26,14 @@ const StyledBannerStack = styled(Stack)(({ theme }) => ({
 }))
 
 const BannerWrapper = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabWidth',
-})(({ theme, expanded, fabWidth }) => ({
+  shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabWidth' && prop !== 'measuredWidth',
+})(({ theme, expanded, fabWidth, measuredWidth }) => ({
   position: 'relative',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'flex-start', // Align container to left so icon (leftmost part) is visible
-  width: expanded ? '350px' : `${fabWidth}px`,
-  maxWidth: expanded ? 350 : `${fabWidth}px`,
+  width: expanded ? `${measuredWidth}px` : `${fabWidth}px`,
+  maxWidth: expanded ? 300 : `${fabWidth}px`, // Reduced from 350 to 300
   overflow: 'hidden',
   backgroundColor: 'transparent',
   border: 'none',
@@ -43,8 +43,7 @@ const BannerWrapper = styled(Box, {
     easing: theme.transitions.easing.easeInOut,
   }),
   [theme.breakpoints.down('sm')]: {
-    width: expanded ? '280px' : `${fabWidth}px`,
-    maxWidth: expanded ? 280 : `${fabWidth}px`,
+    maxWidth: expanded ? 240 : `${fabWidth}px`, // Reduced from 280 to 240
   },
 }))
 
@@ -57,7 +56,7 @@ const BannerContainer = styled(Box, {
   alignItems: 'center',
   height: `${fabHeight}px`,
   width: 'auto',
-  maxWidth: expanded ? 350 : 'none',
+  maxWidth: expanded ? 300 : 'none', // Reduced to match wrapper
   // No transform needed - wrapper width will clip the container
   // When collapsed: wrapper is 40px, shows only leftmost 40px (icon)
   // When expanded: wrapper expands, shows full container (icon + text)
@@ -71,7 +70,7 @@ const BannerContainer = styled(Box, {
     easing: theme.transitions.easing.easeInOut,
   }),
   [theme.breakpoints.down('sm')]: {
-    maxWidth: expanded ? 280 : 'none',
+    maxWidth: expanded ? 240 : 'none', // Reduced to match wrapper
   },
 }))
 
@@ -135,6 +134,16 @@ const DescriptionText = styled(Typography)(({ theme }) => ({
 function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
   const [isExpanded, setIsExpanded] = React.useState(false)
   const timersRef = React.useRef([])
+  const containerRef = React.useRef(null)
+  const [measuredWidth, setMeasuredWidth] = React.useState(fabWidth)
+
+  // Measure the container width when expanded
+  React.useEffect(() => {
+    if (isExpanded && containerRef.current) {
+      const width = containerRef.current.scrollWidth
+      setMeasuredWidth(width)
+    }
+  }, [isExpanded])
 
   React.useEffect(() => {
     const cycleBanner = () => {
@@ -177,8 +186,13 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
   const isImageIcon = banner.icon?.startsWith('http')
 
   return (
-    <BannerWrapper expanded={isExpanded} fabWidth={fabWidth}>
+    <BannerWrapper
+      expanded={isExpanded}
+      fabWidth={fabWidth}
+      measuredWidth={measuredWidth}
+    >
       <BannerContainer
+        ref={containerRef}
         expanded={isExpanded}
         fabHeight={fabHeight}
         fabWidth={fabWidth}
