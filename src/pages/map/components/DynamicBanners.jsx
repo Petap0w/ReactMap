@@ -89,6 +89,7 @@ const TextBanner = styled(Box, {
   justifyContent: 'center',
   minWidth: 0,
   whiteSpace: 'nowrap',
+  marginLeft: '2px', // 2px space between icon and banner
   marginRight: theme.spacing(0.5),
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(0.25, 1, 0.25, 0.75), // Even less padding on mobile
