@@ -26,24 +26,24 @@ const StyledBannerStack = styled(Stack)(({ theme }) => ({
 }))
 
 const BannerWrapper = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabWidth',
-})(({ theme, expanded, fabWidth }) => ({
+  shouldForwardProp: (prop) => prop !== 'wrapperExpanded' && prop !== 'fabWidth',
+})(({ theme, wrapperExpanded, fabWidth }) => ({
   position: 'relative',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'flex-end', // Align to right so icon stays in place
   width: 'auto',
-  maxWidth: expanded ? 300 : `${fabWidth}px`,
+  maxWidth: wrapperExpanded ? 300 : `${fabWidth}px`,
   overflow: 'hidden',
   backgroundColor: 'transparent',
   border: 'none',
   boxShadow: 'none',
   transition: theme.transitions.create(['maxWidth'], {
-    duration: 3000,
+    duration: wrapperExpanded ? 3000 : 0, // Instant collapse, smooth expand
     easing: theme.transitions.easing.easeInOut,
   }),
   [theme.breakpoints.down('sm')]: {
-    maxWidth: expanded ? 240 : `${fabWidth}px`,
+    maxWidth: wrapperExpanded ? 240 : `${fabWidth}px`,
   },
 }))
 
@@ -137,6 +137,7 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
   const containerRef = React.useRef(null)
   const textBannerRef = React.useRef(null)
   const [textWidth, setTextWidth] = React.useState(0)
+  const [wrapperExpanded, setWrapperExpanded] = React.useState(false)
 
   // Measure the text banner width when expanded
   React.useEffect(() => {
@@ -156,6 +157,21 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
       const measureTimer = setTimeout(measure, 150)
       
       return () => clearTimeout(measureTimer)
+    }
+  }, [isExpanded])
+
+  // Control wrapper expansion separately to keep it expanded during slide
+  React.useEffect(() => {
+    if (isExpanded) {
+      // When expanding, expand wrapper immediately
+      setWrapperExpanded(true)
+    } else {
+      // When collapsing, keep wrapper expanded during slide, then collapse after transition
+      const collapseTimer = setTimeout(() => {
+        setWrapperExpanded(false)
+      }, 3000) // Wait for the 3-second slide transition to complete
+      
+      return () => clearTimeout(collapseTimer)
     }
   }, [isExpanded])
 
@@ -200,7 +216,7 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
   const isImageIcon = banner.icon?.startsWith('http')
 
   return (
-    <BannerWrapper expanded={isExpanded} fabWidth={fabWidth}>
+    <BannerWrapper wrapperExpanded={wrapperExpanded} fabWidth={fabWidth}>
       <BannerContainer
         ref={containerRef}
         expanded={isExpanded}
