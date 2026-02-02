@@ -146,15 +146,16 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
   React.useEffect(() => {
     if (isExpanded && textBannerRef.current) {
       // Measure the text banner width (this is what we need to slide)
-      // We measure the actual rendered width including padding
+      // We measure the actual rendered width including padding and margins
       const measure = () => {
         if (textBannerRef.current) {
-          // Get the full width including margin
+          // Get the full width including both margins
           const rect = textBannerRef.current.getBoundingClientRect()
           const computedStyle = window.getComputedStyle(textBannerRef.current)
+          const marginLeft = parseFloat(computedStyle.marginLeft) || 0
           const marginRight = parseFloat(computedStyle.marginRight) || 0
-          // Total width to slide = banner width + its margin
-          const totalWidth = rect.width + marginRight
+          // Total width to slide = banner width + left margin (2px) + right margin
+          const totalWidth = rect.width + marginLeft + marginRight
           setTextWidth(totalWidth)
         }
       }
