@@ -16,7 +16,7 @@ const StyledBannerStack = styled(Stack)(({ theme }) => ({
   position: 'fixed',
   top: theme.spacing(2),
   right: theme.spacing(2),
-  zIndex: 5000,
+  zIndex: 1200, // Lower than menu/dialog (1300) but above map content
   alignItems: 'flex-end',
   gap: theme.spacing(1),
   [theme.breakpoints.down('sm')]: {
