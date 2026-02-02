@@ -39,7 +39,9 @@ const BannerWrapper = styled(Box, {
   border: 'none',
   boxShadow: 'none',
   [theme.breakpoints.down('sm')]: {
-    maxWidth: 240, // Keep expanded width always on mobile too
+    // On mobile, use full available width minus right padding to prevent left-side cutoff
+    // Allow banner to extend fully without being clipped
+    maxWidth: 'calc(100vw - 8px)',
   },
 }))
 
