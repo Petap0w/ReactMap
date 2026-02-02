@@ -50,7 +50,9 @@ const BannerWrapper = styled(Box, {
 const BannerContainer = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'expanded' && prop !== 'fabHeight' && prop !== 'fabWidth' && prop !== 'textWidth',
 })(({ theme, expanded, fabHeight, fabWidth, textWidth }) => {
-  // Calculate how much to translate: when collapsed, slide right by textWidth so only icon is visible
+  // Calculate how much to translate: when collapsed, slide right by textWidth
+  // textWidth already includes the banner width + marginRight from measurement
+  // This ensures the banner is completely hidden and icon is fully visible
   // When expanded, translateX(0) to show full banner
   const translateX = expanded ? 0 : textWidth
   
@@ -143,10 +145,16 @@ function BannerItem({ banner, fabSize, iconSize, fabHeight, fabWidth }) {
   React.useEffect(() => {
     if (isExpanded && textBannerRef.current) {
       // Measure the text banner width (this is what we need to slide)
+      // We measure the actual rendered width including padding
       const measure = () => {
         if (textBannerRef.current) {
-          const width = textBannerRef.current.offsetWidth
-          setTextWidth(width)
+          // Get the full width including margin
+          const rect = textBannerRef.current.getBoundingClientRect()
+          const computedStyle = window.getComputedStyle(textBannerRef.current)
+          const marginRight = parseFloat(computedStyle.marginRight) || 0
+          // Total width to slide = banner width + its margin
+          const totalWidth = rect.width + marginRight
+          setTextWidth(totalWidth)
         }
       }
       
