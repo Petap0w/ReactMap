@@ -667,6 +667,7 @@
         "telegramGroups": []
       },
       "scanNextAreaRestriction": [],
+      "scanNextBlockedAreas": [],
       "discordRoles": [],
       "local": [],
       "telegramGroups": []
@@ -695,6 +696,7 @@
       "scanZoneSpacing": 1,
       "scanZoneInstance": "scanZone",
       "scanZoneAreaRestriction": [],
+      "scanZoneBlockedAreas": [],
       "discordRoles": [],
       "local": [],
       "telegramGroups": []

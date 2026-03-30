@@ -1578,6 +1578,10 @@
         "__name": "SCANNER_SCAN_NEXT_SCAN_NEXT_AREA_RESTRICTION",
         "__format": "json"
       },
+      "scanNextBlockedAreas": {
+        "__name": "SCANNER_SCAN_NEXT_SCAN_NEXT_BLOCKED_AREAS",
+        "__format": "json"
+      },
       "discordRoles": {
         "__name": "SCANNER_SCAN_NEXT_DISCORD_ROLES",
         "__format": "json"
@@ -1667,6 +1671,10 @@
       "scanZoneInstance": "SCANNER_SCAN_ZONE_SCAN_ZONE_INSTANCE",
       "scanZoneAreaRestriction": {
         "__name": "SCANNER_SCAN_ZONE_SCAN_ZONE_AREA_RESTRICTION",
+        "__format": "json"
+      },
+      "scanZoneBlockedAreas": {
+        "__name": "SCANNER_SCAN_ZONE_SCAN_ZONE_BLOCKED_AREAS",
         "__format": "json"
       },
       "discordRoles": {
