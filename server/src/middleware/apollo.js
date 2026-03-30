@@ -7,6 +7,7 @@ const { parse } = require('graphql')
 const { state } = require('../services/state')
 const { version } = require('../../../package.json')
 const { DataLimitCheck } = require('../services/DataLimitCheck')
+const config = require('@rm/config')
 
 /**
  *
@@ -57,14 +58,35 @@ function apolloMiddleware(server) {
         })
       }
 
-      if (!perms && endpoint !== 'Locales') {
-        throw new GraphQLError('session_expired', {
-          extensions: {
-            ...errorCtx,
-            http: { status: 511 },
-            code: 'EXPIRED',
-          },
-        })
+      // Check if auth is enabled with no always-enabled perms and no user
+      const authentication = config.getSafe('authentication')
+      const hasAuthEnabled =
+        authentication?.methods?.length > 0 &&
+        !authentication?.alwaysEnabledPerms?.length
+      const hasNoUser = !id
+      const hasNoPerms =
+        !perms ||
+        (typeof perms === 'object' &&
+          Object.keys(perms).filter(
+            (k) =>
+              k !== 'areaRestrictions' &&
+              k !== 'webhooks' &&
+              k !== 'scanner' &&
+              perms[k] === true,
+          ).length === 0)
+
+      if (hasAuthEnabled && hasNoUser && hasNoPerms) {
+        // Allow endpoints needed for login/registration flow
+        const publicEndpoints = ['Locales', 'CustomComponent', 'CheckUsername', 'MotdCheck']
+        if (!publicEndpoints.includes(endpoint)) {
+          throw new GraphQLError('session_expired', {
+            extensions: {
+              ...errorCtx,
+              http: { status: 511 },
+              code: 'EXPIRED',
+            },
+          })
+        }
       }
 
       if (

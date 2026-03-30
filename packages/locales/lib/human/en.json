@@ -483,6 +483,7 @@
   "localauth_failed": "Authentication failed",
   "error_creating_user": "Unable to register new user at this time",
   "discord_linked": "Discord Linked",
+  "discord_not_linked": "Discord connected but not linked to a map account - disconnect and log in with your map username to link your Discord account",
   "telegram_linked": "Telegram Linked",
   "dialog_filter_footer_apply_to_all_width": 2,
   "dialog_filter_footer_adv_menu_width": 2,
