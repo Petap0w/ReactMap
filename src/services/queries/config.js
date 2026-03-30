@@ -33,6 +33,21 @@ export const FAB_BUTTONS = gql`
   }
 `
 
+export const CUSTOM_BANNERS = gql`
+  query CustomBanners {
+    customBanners {
+      icon
+      href
+      title
+      description
+      backgroundColor
+      textColor
+      displayTime
+      hideTime
+    }
+  }
+`
+
 export const SEARCHABLE = gql`
   query Searchable {
     searchable

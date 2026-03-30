@@ -25,6 +25,7 @@ import { Drawer, PkmnFilterHelp } from '@features/drawer'
 import { useMemory } from '@store/useMemory'
 
 import { FloatingButtonsMemo } from './FloatingBtn'
+import { DynamicBannersMemo } from './DynamicBanners'
 
 export const Nav = React.memo(
   () => {
@@ -36,6 +37,7 @@ export const Nav = React.memo(
           <>
             <Drawer />
             <FloatingButtonsMemo />
+            <DynamicBannersMemo />
             <UserProfile />
             <Tutorial />
             <FilterMenu />

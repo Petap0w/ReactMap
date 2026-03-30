@@ -189,6 +189,10 @@ const resolvers = {
         webhooks: !!selectedWebhook,
       }
     },
+    customBanners: async (_, _args, { req }) => {
+      const { misc } = config.getMapConfig(req)
+      return misc.customBanners || []
+    },
     geocoder: (_, { search }, { perms, Event, req }) => {
       if (perms?.webhooks) {
         const webhook = Event.webhookObj[req.user?.selectedWebhook]
