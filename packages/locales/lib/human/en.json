@@ -813,6 +813,7 @@
   "enter_translation": "Enter Translation",
   "individual_filters": "Partially Filtered",
   "data_limit_reached": "You have requested too much data recently and are on cooldown until {{until}}",
+  "query_area_too_large": "The visible area is too large. Please zoom in to see markers.",
   "unknown_station": "Unknown Power Spot",
   "exclude_battle": "Exclude Max Battle",
   "station": "Power Spot",

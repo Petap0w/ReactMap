@@ -43,6 +43,31 @@ export const useProcessError = (error) => {
         })
         setErrorState(false)
       }
+      if (error.networkError?.statusCode === 400) {
+        // Check for area too large error
+        const graphQLError = error?.graphQLErrors?.[0]
+        if (graphQLError?.extensions?.code === 'AREA_TOO_LARGE') {
+          useWebhookStore.setState({
+            alert: {
+              open: true,
+              severity: 'warning',
+              message: t('query_area_too_large').toString(),
+            },
+          })
+          setErrorState(false)
+        }
+      }
+    }
+    // Also check GraphQL errors directly (for non-network errors)
+    if (error?.graphQLErrors?.[0]?.extensions?.code === 'AREA_TOO_LARGE') {
+      useWebhookStore.setState({
+        alert: {
+          open: true,
+          severity: 'warning',
+          message: t('query_area_too_large').toString(),
+        },
+      })
+      setErrorState(false)
     }
     setErrorState(false)
   }, [error])

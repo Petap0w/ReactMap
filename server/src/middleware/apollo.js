@@ -114,6 +114,59 @@ function apolloMiddleware(server) {
         })
       }
 
+      // Validate geographical area limits on queries with bbox
+      if (definition?.operation === 'query') {
+        const variables = req.body.variables || {}
+        if (
+          variables.minLat != null &&
+          variables.minLon != null
+        ) {
+          const minLat = Number(variables.minLat)
+          const maxLat = Number(variables.maxLat ?? variables.minLat)
+          const minLon = Number(variables.minLon)
+          const maxLon = Number(variables.maxLon ?? variables.minLon)
+
+          const validLat = (val) => !Number.isNaN(val) && val >= -90 && val <= 90
+          const validLon = (val) => !Number.isNaN(val) && val >= -180 && val <= 180
+
+          if (
+            validLat(minLat) &&
+            validLat(maxLat) &&
+            validLon(minLon) &&
+            validLon(maxLon) &&
+            minLat <= maxLat &&
+            minLon <= maxLon
+          ) {
+            const R = 6371
+            let latDiff = Math.abs(maxLat - minLat)
+            let lonDiff = Math.abs(maxLon - minLon)
+            if (lonDiff > 180) lonDiff = 360 - lonDiff
+            if (latDiff > 180) latDiff = 180
+
+            const latDiffRad = latDiff * (Math.PI / 180)
+            const lonDiffRad = lonDiff * (Math.PI / 180)
+            const avgLat = ((maxLat + minLat) / 2) * (Math.PI / 180)
+
+            const areaKm2 = R * latDiffRad * R * Math.cos(avgLat) * lonDiffRad
+
+            const geoLimits = config.getSafe('api.geographicalLimits', {})
+            const maxArea = perms?.extendedView
+              ? (geoLimits.extendedViewMaxAreaKm2 || 30000)
+              : (geoLimits.maxAreaKm2 || 15000)
+
+            if (areaKm2 > maxArea) {
+              throw new GraphQLError('query_area_too_large', {
+                extensions: {
+                  ...errorCtx,
+                  http: { status: 400 },
+                  code: 'AREA_TOO_LARGE',
+                },
+              })
+            }
+          }
+        }
+      }
+
       return {
         userId: id,
         username,

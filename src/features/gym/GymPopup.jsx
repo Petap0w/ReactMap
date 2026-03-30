@@ -1291,6 +1291,7 @@ const GymFooter = ({ lat, lon, hasRaid, gym, setShowDefenders }) => {
  * @returns
  */
 const ExtraGymInfo = ({ last_modified_timestamp, lat, lon, updated }) => {
+  const perms = useMemory((s) => s.auth.perms)
   const enableGymPopupCoords = useStorage(
     (s) => s.userSettings.gyms.enableGymPopupCoords,
   )
@@ -1299,7 +1300,7 @@ const ExtraGymInfo = ({ last_modified_timestamp, lat, lon, updated }) => {
     <Grid container alignItems="center" justifyContent="center">
       <TimeStamp time={updated}>last_seen</TimeStamp>
       <TimeStamp time={last_modified_timestamp}>last_modified</TimeStamp>
-      {enableGymPopupCoords && (
+      {perms.popupcoords && enableGymPopupCoords && (
         <Grid xs={12} textAlign="center">
           <Coords lat={lat} lon={lon} />
         </Grid>

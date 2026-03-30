@@ -20,6 +20,7 @@ import { useAnalytics } from '@hooks/useAnalytics'
 export function PortalPopup({ url, name, lat, lon, updated, imported }) {
   const { t } = useTranslation()
   const Icons = useMemory((s) => s.Icons)
+  const perms = useMemory((s) => s.auth.perms)
   const enablePortalPopupCoords = useStorage(
     (s) => s.userSettings?.wayfarer?.enablePortalPopupCoords,
   )
@@ -89,7 +90,7 @@ export function PortalPopup({ url, name, lat, lon, updated, imported }) {
         <Grid xs={4} textAlign="center">
           <Navigation lat={lat} lon={lon} />
         </Grid>
-        {enablePortalPopupCoords && (
+        {perms.popupcoords && enablePortalPopupCoords && (
           <Grid xs={12} textAlign="center">
             <Coords lat={lat} lon={lon} />
           </Grid>

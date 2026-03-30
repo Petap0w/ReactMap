@@ -96,6 +96,9 @@ class LocalClient extends AuthClient {
                 }
               })
 
+              // Variable to store fresh Discord permissions for later merge
+              let freshDiscordPerms = null
+
               // Fetch fresh Discord roles if user has linked Discord account
               if (userExists.discordId) {
                 try {
@@ -235,8 +238,9 @@ class LocalClient extends AuthClient {
                       discordPerms[key] = [...value]
                     })
 
-                    // Merge fresh Discord perms with local perms
-                    user.perms = mergePerms(user.perms, discordPerms)
+                    // Store Discord perms for later merge (after local status perms)
+                    // This ensures Discord permissions can override local permissions
+                    freshDiscordPerms = discordPerms
 
                     // Update stored discordPerms in database
                     await state.db.models.User.query()
@@ -289,9 +293,14 @@ class LocalClient extends AuthClient {
                     : userExists.data.status) || 'local'
                 : 'local'
 
-              user.perms = {
-                ...user.perms,
-                ...this.getPerms(trialActive, user.status),
+              // Merge local status permissions
+              const localStatusPerms = this.getPerms(trialActive, user.status)
+              user.perms = mergePerms(user.perms, localStatusPerms)
+
+              // If we fetched fresh Discord permissions, merge them AFTER local perms
+              // This ensures Discord permissions (like extendedView) can override local false values
+              if (freshDiscordPerms) {
+                user.perms = mergePerms(user.perms, freshDiscordPerms)
               }
 
               webhookPerms([user.status], 'local', trialActive).forEach((x) =>

@@ -778,5 +778,6 @@
   "rsvp_0": "no rsvp",
   "rsvp_1": "rsvp",
   "rsvp_2": "rsvp_only",
-  "rsvp_changes": "RSVP changements"
+  "rsvp_changes": "RSVP changements",
+  "query_area_too_large": "La zone visible est trop grande. Veuillez zoomer pour voir les marqueurs."
 }

@@ -127,6 +127,7 @@ const BasePokemonTile = (pkmn) => {
   }, basicEqualFn)
 
   const manualParams = useMemory((s) => s.manualParams)
+  const perms = useMemory((s) => s.auth.perms)
 
   const isNearbyStop = pkmn.seen_type === 'nearby_stop'
   const isLure = pkmn.seen_type?.includes('lure')
@@ -261,11 +262,14 @@ const BasePokemonTile = (pkmn) => {
               })
             : basicPokemonMarker({ iconUrl, iconSize })
         }
-        eventHandlers={{ popupopen: handlePopupOpen }}
+        interactive={!!perms?.pokemonpopup}
+        eventHandlers={perms?.pokemonpopup ? { popupopen: handlePopupOpen } : {}}
       >
-        <Popup position={finalLocation}>
-          <PokemonPopup pokemon={pkmn} iconUrl={iconUrl} />
-        </Popup>
+        {perms?.pokemonpopup && (
+          <Popup position={finalLocation}>
+            <PokemonPopup pokemon={pkmn} iconUrl={iconUrl} />
+          </Popup>
+        )}
         {(showTimer || timerOverride || extras.length > 0) && (
           <TooltipWrapper
             timers={showTimer || timerOverride ? [pkmn.expire_timestamp] : []}

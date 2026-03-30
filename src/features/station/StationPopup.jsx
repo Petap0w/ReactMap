@@ -152,6 +152,7 @@ function StationMenu({
   lat,
   lon,
 }) {
+  const perms = useMemory((s) => s.auth.perms)
   const copyCoords = useGetDeepStore(
     'userSettings.stations.enableStationPopupCoords',
     false,
@@ -218,7 +219,7 @@ function StationMenu({
             {t(option.name)}
           </MenuItem>
         ))}
-        {copyCoords && <CopyCoords lat={lat} lon={lon} onClick={handleClose} />}
+        {perms.popupcoords && copyCoords && <CopyCoords lat={lat} lon={lon} onClick={handleClose} />}
       </Menu>
     </>
   )
