@@ -15,16 +15,18 @@ export const useProcessError = (error) => {
   React.useEffect(() => {
     if (error) {
       // eslint-disable-next-line no-console
-      console.error(error)
+      console.error('useProcessError:', error)
     }
     if (error?.networkError && 'statusCode' in error.networkError) {
       if (error.networkError?.statusCode === 464) {
         useMemory.setState({ clientError: 'old_client' })
         setErrorState(true)
+        return
       }
       if (error.networkError?.statusCode === 511) {
         useMemory.setState({ clientError: 'session_expired' })
         setErrorState(true)
+        return
       }
       if (error.networkError?.statusCode === 429) {
         const until =
@@ -42,11 +44,17 @@ export const useProcessError = (error) => {
           },
         })
         setErrorState(false)
+        return
       }
       if (error.networkError?.statusCode === 400) {
-        // Check for area too large error
-        const graphQLError = error?.graphQLErrors?.[0]
-        if (graphQLError?.extensions?.code === 'AREA_TOO_LARGE') {
+        const graphQLError =
+          // @ts-ignore
+          error?.networkError?.result?.errors?.[0] ||
+          error?.graphQLErrors?.[0]
+        if (
+          graphQLError?.extensions?.code === 'AREA_TOO_LARGE' ||
+          graphQLError?.message === 'query_area_too_large'
+        ) {
           useWebhookStore.setState({
             alert: {
               open: true,
@@ -55,11 +63,16 @@ export const useProcessError = (error) => {
             },
           })
           setErrorState(false)
+          return
         }
       }
     }
-    // Also check GraphQL errors directly (for non-network errors)
-    if (error?.graphQLErrors?.[0]?.extensions?.code === 'AREA_TOO_LARGE') {
+    // Check GraphQL errors directly (for errors without networkError)
+    const graphQLError = error?.graphQLErrors?.[0]
+    if (
+      graphQLError?.extensions?.code === 'AREA_TOO_LARGE' ||
+      graphQLError?.message === 'query_area_too_large'
+    ) {
       useWebhookStore.setState({
         alert: {
           open: true,
@@ -68,6 +81,7 @@ export const useProcessError = (error) => {
         },
       })
       setErrorState(false)
+      return
     }
     setErrorState(false)
   }, [error])

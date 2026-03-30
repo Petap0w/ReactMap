@@ -4,6 +4,8 @@ import * as React from 'react'
 import { Marker, Popup, Circle, Polygon } from 'react-leaflet'
 import { t } from 'i18next'
 import { S2CellId, S2LatLng } from 'nodes2ts'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 
 import { useMarkerTimer } from '@hooks/useMarkerTimer'
 import { NEARBY_CELL_LEVEL, getOffset } from '@utils/offset'
@@ -50,6 +52,7 @@ const BasePokemonTile = (pkmn) => {
   const internalId = getWildFilterId(pkmn.pokemon_id, pkmn.form)
 
   const [markerRef, setMarkerRef] = React.useState(null)
+  const [showUpgradeSnackbar, setShowUpgradeSnackbar] = React.useState(false)
 
   const opacity = useOpacity('pokemon')(pkmn.expire_timestamp)
 
@@ -171,6 +174,16 @@ const BasePokemonTile = (pkmn) => {
   useMarkerTimer(pkmn.expire_timestamp, markerRef)
   const handlePopupOpen = useManualPopupTracker('pokemon', pkmn.id)
 
+  const handleMarkerClick = React.useCallback(() => {
+    if (!perms?.pokemonpopup) {
+      setShowUpgradeSnackbar(true)
+    }
+  }, [perms?.pokemonpopup])
+
+  const handleSnackbarClose = React.useCallback(() => {
+    setShowUpgradeSnackbar(false)
+  }, [])
+
   const nearbyCellPolygon = React.useMemo(() => {
     if (isNearbyCell) {
       return getS2Polygon(
@@ -262,8 +275,12 @@ const BasePokemonTile = (pkmn) => {
               })
             : basicPokemonMarker({ iconUrl, iconSize })
         }
-        interactive={!!perms?.pokemonpopup}
-        eventHandlers={perms?.pokemonpopup ? { popupopen: handlePopupOpen } : {}}
+        interactive={true}
+        eventHandlers={
+          perms?.pokemonpopup
+            ? { popupopen: handlePopupOpen }
+            : { click: handleMarkerClick }
+        }
       >
         {perms?.pokemonpopup && (
           <Popup position={finalLocation}>
@@ -314,6 +331,21 @@ const BasePokemonTile = (pkmn) => {
             />
           )}
       </Marker>
+      <Snackbar
+        open={showUpgradeSnackbar}
+        autoHideDuration={5000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="info"
+          variant="filled"
+          sx={{ textAlign: 'center', whiteSpace: 'pre-line' }}
+        >
+          {t('pokemon_details_upgrade_required')}
+        </Alert>
+      </Snackbar>
     </>
   )
 }
