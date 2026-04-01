@@ -58,30 +58,7 @@ class LocalClient extends AuthClient {
         .then(
           async (/** @type {import('@rm/types').FullUser} */ userExists) => {
             if (!userExists) {
-              try {
-                /** @type {import('@rm/types').FullUser} */
-                const newUser =
-                  await state.db.models.User.query().insertAndFetch({
-                    username,
-                    password: await bcrypt.hash(password, 10),
-                    strategy: 'local',
-                    tutorial: !forceTutorial,
-                    data: "{\"status\":\"Free\"}"
-                  })
-                user.id = newUser.id
-                user.username = newUser.username
-                user.perms = { ...user.perms, ...this.getPerms(trialActive) }
-                user.data = newUser.data
-
-                this.log.info(
-                  user.username,
-                  `(${user.id})`,
-                  'Authenticated successfully.',
-                )
-                return done(null, user)
-              } catch (e) {
-                return done(null, user, { message: 'error_creating_user' })
-              }
+              return done(null, false, { message: 'invalid_credentials' })
             }
             if (bcrypt.compareSync(password, userExists.password)) {
               // Merge stored Discord/Telegram perms first (fallback)
