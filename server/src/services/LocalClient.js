@@ -60,7 +60,7 @@ class LocalClient extends AuthClient {
             if (!userExists) {
               return done(null, false, { message: 'invalid_credentials' })
             }
-            if (bcrypt.compareSync(password, userExists.password)) {
+            if (await bcrypt.compare(password, userExists.password)) {
               // Merge stored Discord/Telegram perms first (fallback)
               ;['discordPerms', 'telegramPerms'].forEach((permSet) => {
                 if (userExists[permSet]) {
@@ -77,7 +77,7 @@ class LocalClient extends AuthClient {
               let freshDiscordPerms = null
 
               // Fetch fresh Discord roles if user has linked Discord account
-              if (userExists.discordId) {
+              if (userExists.discordId && !this.strategy.skipDiscordRoleFetch) {
                 try {
                   // Find enabled Discord client
                   const discordClient = Object.values(state.event.authClients || {}).find(
