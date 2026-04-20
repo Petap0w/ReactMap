@@ -61,17 +61,10 @@ class LocalClient extends AuthClient {
               return done(null, false, { message: 'invalid_credentials' })
             }
             if (await bcrypt.compare(password, userExists.password)) {
-              // Merge stored Discord/Telegram perms first (fallback)
-              ;['discordPerms', 'telegramPerms'].forEach((permSet) => {
-                if (userExists[permSet]) {
-                  user.perms = mergePerms(
-                    user.perms,
-                    typeof userExists[permSet] === 'string'
-                      ? JSON.parse(userExists[permSet])
-                      : userExists[permSet],
-                  )
-                }
-              })
+              // Stored discord/telegram perms are intentionally NOT merged:
+              // they reflect a prior external login and can outlive role
+              // changes (e.g. expired premium). Fresh Discord perms are
+              // fetched below when skipDiscordRoleFetch is false.
 
               // Variable to store fresh Discord permissions for later merge
               let freshDiscordPerms = null
