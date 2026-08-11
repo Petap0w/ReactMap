@@ -4,6 +4,8 @@ import * as React from 'react'
 import { Marker, Popup, Circle, Polygon } from 'react-leaflet'
 import { t } from 'i18next'
 import { S2CellId, S2LatLng } from 'nodes2ts'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 
 import { useMarkerTimer } from '@hooks/useMarkerTimer'
 import { NEARBY_CELL_LEVEL, getOffset } from '@utils/offset'
@@ -50,6 +52,7 @@ const BasePokemonTile = (pkmn) => {
   const internalId = getWildFilterId(pkmn.pokemon_id, pkmn.form)
 
   const [markerRef, setMarkerRef] = React.useState(null)
+  const [showUpgradeSnackbar, setShowUpgradeSnackbar] = React.useState(false)
 
   const opacity = useOpacity('pokemon')(pkmn.expire_timestamp)
 
@@ -127,6 +130,7 @@ const BasePokemonTile = (pkmn) => {
   }, basicEqualFn)
 
   const manualParams = useMemory((s) => s.manualParams)
+  const perms = useMemory((s) => s.auth.perms)
 
   const isNearbyStop = pkmn.seen_type === 'nearby_stop'
   const isLure = pkmn.seen_type?.includes('lure')
@@ -169,6 +173,16 @@ const BasePokemonTile = (pkmn) => {
   useForcePopup(pkmn.id, markerRef)
   useMarkerTimer(pkmn.expire_timestamp, markerRef)
   const handlePopupOpen = useManualPopupTracker('pokemon', pkmn.id)
+
+  const handleMarkerClick = React.useCallback(() => {
+    if (!perms?.pokemonpopup) {
+      setShowUpgradeSnackbar(true)
+    }
+  }, [perms?.pokemonpopup])
+
+  const handleSnackbarClose = React.useCallback(() => {
+    setShowUpgradeSnackbar(false)
+  }, [])
 
   const nearbyCellPolygon = React.useMemo(() => {
     if (isNearbyCell) {
@@ -279,11 +293,18 @@ const BasePokemonTile = (pkmn) => {
               })
             : basicPokemonMarker({ iconUrl, iconSize })
         }
-        eventHandlers={{ popupopen: handlePopupOpen }}
+        interactive={true}
+        eventHandlers={
+          perms?.pokemonpopup
+            ? { popupopen: handlePopupOpen }
+            : { click: handleMarkerClick }
+        }
       >
-        <Popup position={finalLocation}>
-          <PokemonPopup pokemon={pkmn} iconUrl={iconUrl} />
-        </Popup>
+        {perms?.pokemonpopup && (
+          <Popup position={finalLocation}>
+            <PokemonPopup pokemon={pkmn} iconUrl={iconUrl} />
+          </Popup>
+        )}
         {(showTimer || timerOverride || extras.length > 0) && (
           <TooltipWrapper
             timers={showTimer || timerOverride ? [pkmn.expire_timestamp] : []}
@@ -328,6 +349,21 @@ const BasePokemonTile = (pkmn) => {
             />
           )}
       </Marker>
+      <Snackbar
+        open={showUpgradeSnackbar}
+        autoHideDuration={5000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="info"
+          variant="filled"
+          sx={{ textAlign: 'center', whiteSpace: 'pre-line' }}
+        >
+          {t('pokemon_details_upgrade_required')}
+        </Alert>
+      </Snackbar>
     </>
   )
 }

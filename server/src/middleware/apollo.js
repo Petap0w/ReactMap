@@ -7,6 +7,7 @@ const { parse } = require('graphql')
 const { state } = require('../services/state')
 const { version } = require('../../../package.json')
 const { DataLimitCheck } = require('../services/DataLimitCheck')
+const config = require('@rm/config')
 
 /**
  *
@@ -57,14 +58,35 @@ function apolloMiddleware(server) {
         })
       }
 
-      if (!perms && endpoint !== 'Locales') {
-        throw new GraphQLError('session_expired', {
-          extensions: {
-            ...errorCtx,
-            http: { status: 511 },
-            code: 'EXPIRED',
-          },
-        })
+      // Check if auth is enabled with no always-enabled perms and no user
+      const authentication = config.getSafe('authentication')
+      const hasAuthEnabled =
+        authentication?.methods?.length > 0 &&
+        !authentication?.alwaysEnabledPerms?.length
+      const hasNoUser = !id
+      const hasNoPerms =
+        !perms ||
+        (typeof perms === 'object' &&
+          Object.keys(perms).filter(
+            (k) =>
+              k !== 'areaRestrictions' &&
+              k !== 'webhooks' &&
+              k !== 'scanner' &&
+              perms[k] === true,
+          ).length === 0)
+
+      if (hasAuthEnabled && hasNoUser && hasNoPerms) {
+        // Allow endpoints needed for login/registration flow
+        const publicEndpoints = ['Locales', 'CustomComponent', 'CheckUsername', 'MotdCheck']
+        if (!publicEndpoints.includes(endpoint)) {
+          throw new GraphQLError('session_expired', {
+            extensions: {
+              ...errorCtx,
+              http: { status: 511 },
+              code: 'EXPIRED',
+            },
+          })
+        }
       }
 
       if (
@@ -90,6 +112,59 @@ function apolloMiddleware(server) {
             code: ApolloServerErrorCode.BAD_REQUEST,
           },
         })
+      }
+
+      // Validate geographical area limits on queries with bbox
+      if (definition?.operation === 'query') {
+        const variables = req.body.variables || {}
+        if (
+          variables.minLat != null &&
+          variables.minLon != null
+        ) {
+          const minLat = Number(variables.minLat)
+          const maxLat = Number(variables.maxLat ?? variables.minLat)
+          const minLon = Number(variables.minLon)
+          const maxLon = Number(variables.maxLon ?? variables.minLon)
+
+          const validLat = (val) => !Number.isNaN(val) && val >= -90 && val <= 90
+          const validLon = (val) => !Number.isNaN(val) && val >= -180 && val <= 180
+
+          if (
+            validLat(minLat) &&
+            validLat(maxLat) &&
+            validLon(minLon) &&
+            validLon(maxLon) &&
+            minLat <= maxLat &&
+            minLon <= maxLon
+          ) {
+            const R = 6371
+            let latDiff = Math.abs(maxLat - minLat)
+            let lonDiff = Math.abs(maxLon - minLon)
+            if (lonDiff > 180) lonDiff = 360 - lonDiff
+            if (latDiff > 180) latDiff = 180
+
+            const latDiffRad = latDiff * (Math.PI / 180)
+            const lonDiffRad = lonDiff * (Math.PI / 180)
+            const avgLat = ((maxLat + minLat) / 2) * (Math.PI / 180)
+
+            const areaKm2 = R * latDiffRad * R * Math.cos(avgLat) * lonDiffRad
+
+            const geoLimits = config.getSafe('api.geographicalLimits', {})
+            const maxArea = perms?.extendedView
+              ? (geoLimits.extendedViewMaxAreaKm2 || 30000)
+              : (geoLimits.maxAreaKm2 || 15000)
+
+            if (areaKm2 > maxArea) {
+              throw new GraphQLError('query_area_too_large', {
+                extensions: {
+                  ...errorCtx,
+                  http: { status: 400 },
+                  code: 'AREA_TOO_LARGE',
+                },
+              })
+            }
+          }
+        }
       }
 
       return {

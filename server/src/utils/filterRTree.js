@@ -11,9 +11,39 @@ const { consolidateAreas } = require('./consolidateAreas')
  * @param {T} item
  * @param {string[]} areaRestrictions
  * @param {string[]} onlyAreas
+ * @param {string[]} blockedAreas
  * @returns {boolean}
  */
-function filterRTree(item, areaRestrictions = [], onlyAreas = []) {
+function filterRTree(item, areaRestrictions = [], onlyAreas = [], blockedAreas = []) {
+  // First check if point is in any blocked area
+  if (blockedAreas.length) {
+    const areas = config.getSafe('areas')
+    const validBlockedAreas = blockedAreas.filter((a) => areas.names.has(a))
+    
+    if (validBlockedAreas.length) {
+      /** @type {import("@rm/types").RMGeoJSON['features']} */
+      const blockedFeatures = config
+        .getSafe('areas.myRTree')
+        .search({
+          x: item.lon || 0,
+          y: item.lat || 0,
+          w: 0,
+          h: 0,
+        })
+        .filter((feature) => validBlockedAreas.includes(feature.properties.key))
+
+      const foundInBlocked =
+        blockedFeatures.length &&
+        blockedFeatures.some((feature) =>
+          pointInPolygon(point([item.lon || 0, item.lat || 0]), feature),
+        )
+
+      if (foundInBlocked) {
+        return false
+      }
+    }
+  }
+
   if (!areaRestrictions.length && !onlyAreas.length) return true
 
   const consolidatedAreas = consolidateAreas(areaRestrictions, onlyAreas)

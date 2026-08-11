@@ -198,6 +198,17 @@ type FabButtons {
   search: Boolean
 }
 
+type CustomBanner {
+  icon: String
+  href: String
+  title: String
+  description: String
+  backgroundColor: String
+  textColor: String
+  displayTime: Int
+  hideTime: Int
+}
+
 type ScannerConfig {
   scannerType: String
   showScanCount: Boolean

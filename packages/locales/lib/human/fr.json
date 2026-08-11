@@ -254,6 +254,7 @@
   "map_subtitle": "Affiche la Carte",
   "nests_subtitle": "Affiche les nids et Polygones de nids actifs",
   "pokemon_subtitle": "Affiche la localisation de tous les Pokémon et heure d'expiration",
+  "pokemon_details_upgrade_required": "Les détails des Pokémon nécessitent une mise à niveau de votre compte vers Explorer ou Premium\nLes détails sont disponibles via le lien Gérer Mon Compte sur la page Profil\nNote: L'emplacement du Pokémon peut être à proximité de ce qui est affiché sur la carte",
   "pokestops_subtitle": "Affiche la localisation de tous les Pokéstops",
   "portals_subtitle": "Affiche tous les Portails Ingress",
   "pvp_subtitle": "Affiche les infos PVP/PC/Niveau pour chaque Pokémon",
@@ -455,6 +456,7 @@
   "error_creating_user": "Impossible d'enregistrer un nouvel utilisateur pour le moment",
   "localauth_failed": "Authentification impossible",
   "discord_linked": "Discord lié",
+  "discord_not_linked": "Discord connecté mais non lié à un compte map - déconnectez-vous et connectez-vous avec votre nom d'utilisateur map pour pouvoir lier votre compte Discord",
   "telegram_linked": "Télégram lié",
   "level": "niveau",
   "km": "km",
@@ -569,7 +571,7 @@
   "delete": "Supprimer",
   "name": "Nom",
   "only_confirmed": "Confirmé seulement",
-  "only_exclude_grunts": "Exclure les grognements",
+  "only_exclude_grunts": "Exclure les sbires",
   "only_exclude_leaders": "Exclure les dirigeants",
   "rocket_pokemon": "Pokémon Rocket",
   "decoy": "Leurre",
@@ -776,5 +778,6 @@
   "rsvp_0": "no rsvp",
   "rsvp_1": "rsvp",
   "rsvp_2": "rsvp_only",
-  "rsvp_changes": "RSVP changements"
+  "rsvp_changes": "RSVP changements",
+  "query_area_too_large": "La zone visible est trop grande. Veuillez zoomer pour voir les marqueurs."
 }

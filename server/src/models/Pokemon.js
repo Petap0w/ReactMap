@@ -165,51 +165,123 @@ class Pokemon extends Model {
       }
       query.andWhere((ivOr) => {
         if (ivs || pvp) {
-          if (globalFilter.filterKeys.size) {
-            ivOr.andWhere((pkmn) => {
-              const keys = globalFilter.keyArray
-              for (let i = 0; i < keys.length; i += 1) {
-                const key = keys[i]
-                switch (key) {
-                  case 'xxs':
-                  case 'xxl':
-                    if (hasSize) {
-                      pkmn.orWhere('pokemon.size', key === 'xxl' ? 5 : 1)
-                    }
-                    break
-                  case 'gender':
-                    pkmn.andWhere('pokemon.gender', onlyIvOr[key])
-                    break
-                  case 'cp':
-                  case 'level':
-                  case 'atk_iv':
-                  case 'def_iv':
-                  case 'sta_iv':
-                  case 'iv':
-                    if (perms.iv) {
-                      pkmn.andWhereBetween(key, onlyIvOr[key])
-                    }
-                    break
-                  default:
-                    if (
-                      perms.pvp &&
-                      BASE_KEYS.every((x) => !globalFilter.filterKeys.has(x))
-                    ) {
-                      // doesn't return everything if only pvp stats for individual pokemon
-                      pkmn.whereNull('pokemon_id')
-                    }
-                    break
+          const hasSelectedPokemon =
+            pokemonIds.length > 0 || pokemonForms.length > 0
+          const isBasicMode = globalFilter.mods.onlyEasyMode
+
+          if (hasSelectedPokemon && isBasicMode) {
+            // In basic mode: selected pokemon must match global filters (AND logic)
+            if (globalFilter.filterKeys.size) {
+              ivOr.andWhere((pkmn) => {
+                // First restrict to selected pokemon
+                if (pokemonIds.length > 0) {
+                  pkmn.whereIn('pokemon_id', pokemonIds)
+                }
+                if (pokemonForms.length > 0) {
+                  if (pokemonIds.length > 0) {
+                    pkmn.andWhereIn('pokemon.form', pokemonForms)
+                  } else {
+                    pkmn.whereIn('pokemon.form', pokemonForms)
+                  }
+                }
+
+                // Then apply global filters to those selected pokemon
+                const keys = globalFilter.keyArray
+                for (let i = 0; i < keys.length; i += 1) {
+                  const key = keys[i]
+                  switch (key) {
+                    case 'xxs':
+                    case 'xxl':
+                      if (hasSize) {
+                        pkmn.orWhere('pokemon.size', key === 'xxl' ? 5 : 1)
+                      }
+                      break
+                    case 'gender':
+                      pkmn.andWhere('pokemon.gender', onlyIvOr[key])
+                      break
+                    case 'cp':
+                    case 'level':
+                    case 'atk_iv':
+                    case 'def_iv':
+                    case 'sta_iv':
+                    case 'iv':
+                      if (perms.iv) {
+                        pkmn.andWhereBetween(key, onlyIvOr[key])
+                      }
+                      break
+                    default:
+                      if (
+                        perms.pvp &&
+                        BASE_KEYS.every((x) => !globalFilter.filterKeys.has(x))
+                      ) {
+                        // doesn't return everything if only pvp stats for individual pokemon
+                        pkmn.whereNull('pokemon_id')
+                      }
+                      break
+                  }
+                }
+              })
+            } else {
+              // No global filters, just show selected pokemon
+              if (pokemonIds.length > 0) {
+                ivOr.whereIn('pokemon_id', pokemonIds)
+              }
+              if (pokemonForms.length > 0) {
+                if (pokemonIds.length > 0) {
+                  ivOr.andWhereIn('pokemon.form', pokemonForms)
+                } else {
+                  ivOr.whereIn('pokemon.form', pokemonForms)
                 }
               }
-            })
+            }
           } else {
-            ivOr.whereNull('pokemon_id')
-          }
-          if (pokemonIds.length) {
-            ivOr.orWhereIn('pokemon_id', pokemonIds)
-          }
-          if (pokemonForms.length) {
-            ivOr.orWhereIn('pokemon.form', pokemonForms)
+            // Intermediate/Expert mode OR no pokemon selected: use original OR logic
+            if (globalFilter.filterKeys.size) {
+              ivOr.andWhere((pkmn) => {
+                const keys = globalFilter.keyArray
+                for (let i = 0; i < keys.length; i += 1) {
+                  const key = keys[i]
+                  switch (key) {
+                    case 'xxs':
+                    case 'xxl':
+                      if (hasSize) {
+                        pkmn.orWhere('pokemon.size', key === 'xxl' ? 5 : 1)
+                      }
+                      break
+                    case 'gender':
+                      pkmn.andWhere('pokemon.gender', onlyIvOr[key])
+                      break
+                    case 'cp':
+                    case 'level':
+                    case 'atk_iv':
+                    case 'def_iv':
+                    case 'sta_iv':
+                    case 'iv':
+                      if (perms.iv) {
+                        pkmn.andWhereBetween(key, onlyIvOr[key])
+                      }
+                      break
+                    default:
+                      if (
+                        perms.pvp &&
+                        BASE_KEYS.every((x) => !globalFilter.filterKeys.has(x))
+                      ) {
+                        // doesn't return everything if only pvp stats for individual pokemon
+                        pkmn.whereNull('pokemon_id')
+                      }
+                      break
+                  }
+                }
+              })
+            } else {
+              ivOr.whereNull('pokemon_id')
+            }
+            if (pokemonIds.length) {
+              ivOr.orWhereIn('pokemon_id', pokemonIds)
+            }
+            if (pokemonForms.length) {
+              ivOr.orWhereIn('pokemon.form', pokemonForms)
+            }
           }
         }
         if (onlyZeroIv && ivs) {

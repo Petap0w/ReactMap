@@ -382,6 +382,14 @@
     },
     "kojiOptions": {
       "bearerToken": "API_KOJI_OPTIONS_BEARER_TOKEN"
+    },
+    "coordinateJitter": {
+      "__name": "API_COORDINATE_JITTER",
+      "__format": "number"
+    },
+    "geographicalLimits": {
+      "maxAreaKm2": "API_GEO_LIMIT_MAX_AREA_KM2",
+      "extendedViewMaxAreaKm2": "API_GEO_LIMIT_EXTENDED_MAX_AREA_KM2"
     }
   },
   "map": {
@@ -428,6 +436,32 @@
         "__name": "MAP_GENERAL_ACTIVE_WEATHER_ZOOM",
         "__format": "number"
       },
+      "extendedView": {
+        "startLat": {
+          "__name": "MAP_GENERAL_EXTENDED_START_LAT",
+          "__format": "number"
+        },
+        "startLon": {
+          "__name": "MAP_GENERAL_EXTENDED_START_LON",
+          "__format": "number"
+        },
+        "startZoom": {
+          "__name": "MAP_GENERAL_EXTENDED_START_ZOOM",
+          "__format": "number"
+        },
+        "minZoom": {
+          "__name": "MAP_GENERAL_EXTENDED_MIN_ZOOM",
+          "__format": "number"
+        },
+        "maxZoom": {
+          "__name": "MAP_GENERAL_EXTENDED_MAX_ZOOM",
+          "__format": "number"
+        },
+        "scanAreasZoom": {
+          "__name": "MAP_GENERAL_EXTENDED_SCAN_AREAS_ZOOM",
+          "__format": "number"
+        }
+      },
       "geoJsonFileName": "MAP_GENERAL_GEO_JSON_FILE_NAME",
       "separateDrawerActions": {
         "__name": "MAP_GENERAL_SEPARATE_DRAWER_ACTIONS",
@@ -447,6 +481,7 @@
     },
     "links": {
       "discordInvite": "MAP_LINKS_DISCORD_INVITE",
+      "discordLinkName": "MAP_LINKS_DISCORD_LINK_NAME",
       "discordLink": "MAP_LINKS_DISCORD_LINK",
       "feedbackLink": "MAP_LINKS_FEEDBACK_LINK",
       "statsLink": "MAP_LINKS_STATS_LINK",
@@ -545,6 +580,10 @@
       },
       "customFloatingIcons": {
         "__name": "MAP_MISC_CUSTOM_FLOATING_ICONS",
+        "__format": "json"
+      },
+      "customBanners": {
+        "__name": "MAP_MISC_CUSTOM_BANNERS",
         "__format": "json"
       },
       "expandAllScanAreas": {
@@ -1564,6 +1603,10 @@
         "__name": "SCANNER_SCAN_NEXT_SCAN_NEXT_AREA_RESTRICTION",
         "__format": "json"
       },
+      "scanNextBlockedAreas": {
+        "__name": "SCANNER_SCAN_NEXT_SCAN_NEXT_BLOCKED_AREAS",
+        "__format": "json"
+      },
       "discordRoles": {
         "__name": "SCANNER_SCAN_NEXT_DISCORD_ROLES",
         "__format": "json"
@@ -1653,6 +1696,10 @@
       "scanZoneInstance": "SCANNER_SCAN_ZONE_SCAN_ZONE_INSTANCE",
       "scanZoneAreaRestriction": {
         "__name": "SCANNER_SCAN_ZONE_SCAN_ZONE_AREA_RESTRICTION",
+        "__format": "json"
+      },
+      "scanZoneBlockedAreas": {
+        "__name": "SCANNER_SCAN_ZONE_SCAN_ZONE_BLOCKED_AREAS",
         "__format": "json"
       },
       "discordRoles": {
@@ -1752,6 +1799,34 @@
         },
         "roles": {
           "__name": "AUTHENTICATION_PERMS_PVP_ROLES",
+          "__format": "json"
+        }
+      },
+      "pokemonpopup": {
+        "enabled": {
+          "__name": "AUTHENTICATION_PERMS_POKEMONPOPUP_ENABLED",
+          "__format": "boolean"
+        },
+        "trialPeriodEligible": {
+          "__name": "AUTHENTICATION_PERMS_POKEMONPOPUP_TRIAL_PERIOD_ELIGIBLE",
+          "__format": "boolean"
+        },
+        "roles": {
+          "__name": "AUTHENTICATION_PERMS_POKEMONPOPUP_ROLES",
+          "__format": "json"
+        }
+      },
+      "popupcoords": {
+        "enabled": {
+          "__name": "AUTHENTICATION_PERMS_POPUPCOORDS_ENABLED",
+          "__format": "boolean"
+        },
+        "trialPeriodEligible": {
+          "__name": "AUTHENTICATION_PERMS_POPUPCOORDS_TRIAL_PERIOD_ELIGIBLE",
+          "__format": "boolean"
+        },
+        "roles": {
+          "__name": "AUTHENTICATION_PERMS_POPUPCOORDS_ROLES",
           "__format": "json"
         }
       },

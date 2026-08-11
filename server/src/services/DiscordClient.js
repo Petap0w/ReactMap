@@ -353,9 +353,11 @@ class DiscordClient extends AuthClient {
                   .where('data', null)
               }
               await state.db.models.User.query()
+                .update({
+                  discordId: null,
+                })
                 .where('discordId', discordUser.id)
                 .whereNot('id', req.user.id)
-                .delete()
               return done(null, {
                 selectedWebhook,
                 ...discordUser,

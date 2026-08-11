@@ -188,6 +188,10 @@ const resolvers = {
         webhooks: !!selectedWebhook,
       }
     },
+    customBanners: async (_, _args, { req }) => {
+      const { misc } = config.getMapConfig(req)
+      return misc.customBanners || []
+    },
     geocoder: (_, { search }, { perms, Event, req }) => {
       if (perms?.webhooks) {
         const webhook = Event.webhookObj[req.user?.selectedWebhook]
@@ -856,6 +860,31 @@ const resolvers = {
         return true
       }
       return false
+    },
+  },
+  Pokemon: {
+    lat: (parent, _args, { perms }) => {
+      // Return precise coordinates if user has pokemonpopup OR popupcoords permission
+      // Otherwise add random jitter (~111m imprecision) to prevent precise scraping while maintaining visual separation
+      if (perms?.pokemonpopup || perms?.popupcoords) {
+        return parent.lat
+      }
+      if (!parent.lat) return null
+      // Add random jitter to prevent precise scraping while maintaining visual separation
+      // Jitter range: ±(coordinateJitter/2) degrees
+      // Default 0.001 degrees ≈ ±0.0005 degrees ≈ ±55 meters (gives ~111m imprecision)
+      const jitterRange = config.getSafe('api.coordinateJitter', 0.001)
+      const jitter = (Math.random() - 0.5) * jitterRange
+      return Number((parent.lat + jitter).toFixed(6))
+    },
+    lon: (parent, _args, { perms }) => {
+      if (perms?.pokemonpopup || perms?.popupcoords) {
+        return parent.lon
+      }
+      if (!parent.lon) return null
+      const jitterRange = config.getSafe('api.coordinateJitter', 0.001)
+      const jitter = (Math.random() - 0.5) * jitterRange
+      return Number((parent.lon + jitter).toFixed(6))
     },
   },
 }

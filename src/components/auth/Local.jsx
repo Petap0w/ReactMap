@@ -122,17 +122,9 @@ export function LocalLogin({ href, sx, style }) {
               variant="contained"
               color="primary"
               onClick={handleSubmit}
-              disabled={!user.username || !user.password || submitted}
+              disabled={!user.username || !user.password || !data?.checkUsername || submitted}
             >
-              {(() => {
-                if (!user.username && !user.password) {
-                  return `${t('login')}/${t('register')}`
-                }
-                if (data?.checkUsername) {
-                  return t('login')
-                }
-                return t('register')
-              })()}
+              {t('login')}
             </Button>
           </Grid>
         </Grid>

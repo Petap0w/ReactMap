@@ -24,6 +24,11 @@ function getServerSettings(req) {
   const authentication = config.getSafe('authentication')
   const database = config.getSafe('database')
 
+  // Apply extendedView config if user has permission
+  const generalConfig = user.perms?.extendedView && mapConfig.general.extendedView
+    ? { ...mapConfig.general, ...mapConfig.general.extendedView }
+    : mapConfig.general
+
   const serverSettings = {
     api: {
       polling: api.polling,
@@ -40,13 +45,14 @@ function getServerSettings(req) {
     map: {
       ...mapConfig,
       general: {
-        ...mapConfig.general,
+        ...generalConfig,
         geoJsonFileName: undefined,
       },
       loginPage: !!mapConfig.loginPage.components.length,
       donationPage: undefined,
       messageOfTheDay: undefined,
       customFloatingIcons: undefined,
+      customBanners: undefined,
     },
     authentication: {
       loggedIn: !!req.user,

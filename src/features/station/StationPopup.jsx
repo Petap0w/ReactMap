@@ -268,6 +268,7 @@ const ExtraInfo = ({ updated }) => {
  *  battles?: import('@rm/types').StationBattle[]
  * }} props */
 function StationMenu({ id, lat, lon, battles = [] }) {
+  const perms = useMemory((s) => s.auth.perms)
   const copyCoords = useGetDeepStore(
     'userSettings.stations.enableStationPopupCoords',
     false,
@@ -360,7 +361,7 @@ function StationMenu({ id, lat, lon, battles = [] }) {
             {option.label}
           </MenuItem>
         ))}
-        {copyCoords && <CopyCoords lat={lat} lon={lon} onClick={handleClose} />}
+        {perms.popupcoords && copyCoords && <CopyCoords lat={lat} lon={lon} onClick={handleClose} />}
       </Menu>
     </>
   )

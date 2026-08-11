@@ -139,7 +139,7 @@ export const useStorage = create(
       icons: {},
       audio: {},
       menus: {},
-      tutorial: true,
+      tutorial: false,
       sidebar: '',
       scanAreasMenu: '',
       advMenu: {

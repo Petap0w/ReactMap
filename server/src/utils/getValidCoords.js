@@ -17,11 +17,18 @@ function getValidCoords(mode, points, perms) {
         : 'scanner.scanZone.scanZoneAreaRestriction'
     const areaRestrictions = config.getSafe(configString) || []
 
+    const blockedConfigString =
+      mode === 'scanNext'
+        ? 'scanner.scanNext.scanNextBlockedAreas'
+        : 'scanner.scanZone.scanZoneBlockedAreas'
+    const blockedAreas = config.getSafe(blockedConfigString) || []
+
     const validPoints = points.map((point) =>
       filterRTree(
         { lat: point[0], lon: point[1] },
         perms.areaRestrictions,
         areaRestrictions,
+        blockedAreas,
       ),
     )
     return validPoints

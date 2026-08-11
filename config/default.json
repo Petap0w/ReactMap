@@ -134,6 +134,11 @@
     },
     "kojiOptions": {
       "bearerToken": "KOJI_SECRET"
+    },
+    "coordinateJitter": 0.001,
+    "geographicalLimits": {
+      "maxAreaKm2": 15000,
+      "extendedViewMaxAreaKm2": 30000
     }
   },
   "map": {
@@ -153,6 +158,14 @@
       "geoJsonFileName": "areas.json",
       "separateDrawerActions": false,
       "attributionPrefix": "<a href='https://github.com/WatWowMap/ReactMap' target='_blank' rel='noreferrer'>ReactMap</a>",
+      "extendedView": {
+        "startLat": 0,
+        "startLon": 0,
+        "startZoom": 10,
+        "minZoom": 5,
+        "maxZoom": 20,
+        "scanAreasZoom": 10
+      },
       "menuOrder": [
         "gyms",
         "nests",
@@ -177,6 +190,7 @@
     },
     "links": {
       "discordInvite": "",
+      "discordLinkName": "Discord",
       "discordLink": "",
       "feedbackLink": "",
       "statsLink": "",
@@ -269,6 +283,7 @@
       "enableStationPopupCoordsSelector": false,
       "enableTappablePopupCoordsSelector": false,
       "customFloatingIcons": [],
+      "customBanners": [],
       "expandAllScanAreas": false,
       "enableRouteDownload": false
     },
@@ -510,7 +525,14 @@
       "eggs": true,
       "pokemon": true,
       "gymBadges": false,
-      "baseGymSlotAmounts": [1, 2, 3, 4, 5, 6]
+      "baseGymSlotAmounts": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
     },
     "nests": {
       "enabled": false,
@@ -518,7 +540,10 @@
       "pokemon": false,
       "allPokemon": true,
       "onlyShowAvailable": true,
-      "avgFilter": [0, 100],
+      "avgFilter": [
+        0,
+        100
+      ],
       "avgSliderStep": 1,
       "active": "active"
     },
@@ -566,14 +591,35 @@
       "legacyFilter": false,
       "allPokemon": false,
       "globalValues": {
-        "iv": [80, 100],
-        "level": [1, 55],
-        "atk_iv": [0, 15],
-        "def_iv": [0, 15],
-        "sta_iv": [0, 15],
-        "pvp": [1, 10],
+        "iv": [
+          80,
+          100
+        ],
+        "level": [
+          1,
+          55
+        ],
+        "atk_iv": [
+          0,
+          15
+        ],
+        "def_iv": [
+          0,
+          15
+        ],
+        "sta_iv": [
+          0,
+          15
+        ],
+        "pvp": [
+          1,
+          10
+        ],
         "gender": 0,
-        "cp": [10, 5000],
+        "cp": [
+          10,
+          5000
+        ],
         "xxs": false,
         "xxl": false
       }
@@ -662,6 +708,7 @@
         "telegramGroups": []
       },
       "scanNextAreaRestriction": [],
+      "scanNextBlockedAreas": [],
       "discordRoles": [],
       "local": [],
       "telegramGroups": []
@@ -690,6 +737,7 @@
       "scanZoneSpacing": 1,
       "scanZoneInstance": "scanZone",
       "scanZoneAreaRestriction": [],
+      "scanZoneBlockedAreas": [],
       "discordRoles": [],
       "local": [],
       "telegramGroups": []
@@ -768,7 +816,8 @@
       {
         "name": "local",
         "type": "local",
-        "enabled": false
+        "enabled": false,
+        "skipDiscordRoleFetch": false
       }
     ],
     "strictAreaRestrictions": false,
@@ -793,6 +842,16 @@
         "roles": []
       },
       "pvp": {
+        "enabled": true,
+        "trialPeriodEligible": false,
+        "roles": []
+      },
+      "pokemonpopup": {
+        "enabled": true,
+        "trialPeriodEligible": false,
+        "roles": []
+      },
+      "popupcoords": {
         "enabled": true,
         "trialPeriodEligible": false,
         "roles": []

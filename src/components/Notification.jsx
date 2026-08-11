@@ -48,41 +48,48 @@ export function Notification({
   closable = true,
 }) {
   const { t } = useTranslation()
-  const [alert, setAlert] = React.useState(!!open)
+  const timerRef = React.useRef(null)
 
-  const handleClose = React.useCallback(() => {
-    setAlert(false)
-    if (cb) cb()
-  }, [cb])
+  const handleClose = React.useCallback((event, reason) => {
+    if (reason === 'clickaway' && ignoreClickaway) return
+    if (!closable) return
 
-  const handleSnackbarClose = React.useCallback(
-    (_, reason) => {
-      if (reason === 'clickaway' && ignoreClickaway) return
-      if (!closable) return
-      handleClose()
-    },
-    [closable, handleClose, ignoreClickaway],
-  )
+    if (timerRef.current) {
+      timerRef.current()
+      timerRef.current = null
+    }
+
+    // Delay callback until after transition completes
+    setTimeout(() => {
+      if (cb) cb()
+    }, 300)
+  }, [cb, closable, ignoreClickaway])
 
   React.useEffect(() => {
-    setAlert(!!open)
-
     if (open && typeof autoHideDuration === 'number') {
-      return setLongTimeout(() => {
-        handleClose()
+      timerRef.current = setLongTimeout(() => {
+        timerRef.current = null
+        handleClose(null, 'timeout')
       }, autoHideDuration)
+      return () => {
+        if (timerRef.current) {
+          timerRef.current()
+          timerRef.current = null
+        }
+      }
     }
     return undefined
-  }, [autoHideDuration, handleClose, open])
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Snackbar
-      open={alert}
-      onClose={handleSnackbarClose}
+      open={open}
+      onClose={handleClose}
       TransitionComponent={SlideTransition}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
     >
       <Alert
-        onClose={closable ? handleClose : undefined}
+        onClose={handleClose}
         severity={severity}
         variant="filled"
         style={alertStyle}
