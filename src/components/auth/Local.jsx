@@ -20,10 +20,18 @@ import { VisibleToggle } from '@components/inputs/VisibleToggle'
 
 /**
  *
- * @param {{ href?: string, sx?: import("@mui/material").SxProps, style?: React.CSSProperties }} props
+ * @param {{ href?: string, sx?: import("@mui/material").SxProps, style?: React.CSSProperties, horizontal?: boolean, textColor?: string, inputBackgroundColor?: string, buttonBackgroundColor?: string }} props
  * @returns
  */
-export function LocalLogin({ href, sx, style }) {
+export function LocalLogin({
+  href,
+  sx,
+  style,
+  horizontal = false,
+  textColor,
+  inputBackgroundColor,
+  buttonBackgroundColor,
+}) {
   const { t } = useTranslation()
   const [user, setUser] = React.useState({
     username: '',
@@ -33,6 +41,28 @@ export function LocalLogin({ href, sx, style }) {
   const [error, setError] = React.useState('')
   const [submitted, setSubmitted] = React.useState(false)
   const [checkUsername, { data }] = useLazyQuery(Query.user('CHECK_USERNAME'))
+
+  // Check if text should be black (from textColor prop, style.color, or sx.color)
+  const textColorBlack = React.useMemo(() => {
+    // Explicit textColor prop takes precedence
+    if (textColor === 'black' || textColor === '#000' || textColor === '#000000') {
+      return true
+    }
+    // Check style.color
+    if (style?.color === 'black' || style?.color === '#000' || style?.color === '#000000') {
+      return true
+    }
+    // Check sx.color (can be object or array)
+    if (sx) {
+      const sxObj = Array.isArray(sx) ? sx.find((s) => s && typeof s === 'object') : sx
+      if (sxObj && typeof sxObj === 'object') {
+        if (sxObj.color === 'black' || sxObj.color === '#000' || sxObj.color === '#000000') {
+          return true
+        }
+      }
+    }
+    return false
+  }, [textColor, style, sx])
 
   const handleChange = (e) => {
     if (e.target.name === 'username') {
@@ -63,12 +93,34 @@ export function LocalLogin({ href, sx, style }) {
           container
           justifyContent="center"
           alignItems="center"
-          direction="column"
-          spacing={2}
+          direction={
+            horizontal
+              ? { xs: 'column', sm: 'row' }
+              : 'column'
+          }
+          spacing={horizontal ? { xs: 2, sm: 1 } : 2}
+          flexWrap={horizontal ? { xs: 'wrap', sm: 'nowrap' } : 'wrap'}
         >
-          <Grid textAlign="center">
+          <Grid
+            textAlign="center"
+            {...(horizontal ? { xs: 12, sm: 'auto' } : { xs: 12 })}
+          >
             <FormControl variant="outlined" color="secondary" size="small">
-              <InputLabel htmlFor="username">{t('local_username')}</InputLabel>
+              <InputLabel
+                htmlFor="username"
+                sx={
+                  textColorBlack
+                    ? {
+                        color: 'black !important',
+                        '&.Mui-focused': {
+                          color: 'black !important',
+                        },
+                      }
+                    : undefined
+                }
+              >
+                {t('local_username')}
+              </InputLabel>
               <OutlinedInput
                 id="username"
                 name="username"
@@ -78,16 +130,55 @@ export function LocalLogin({ href, sx, style }) {
                 autoComplete="username"
                 label={t('local_username')}
                 color="secondary"
-                style={{ width: 250 }}
+                sx={{
+                  width: horizontal
+                    ? { xs: 250, sm: 180 }
+                    : 250,
+                  ...(inputBackgroundColor && {
+                    backgroundColor: inputBackgroundColor,
+                  }),
+                  ...(textColorBlack && {
+                    color: 'black !important',
+                    '& .MuiOutlinedInput-input': {
+                      color: 'black !important',
+                    },
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(0, 0, 0, 0.23) !important',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(0, 0, 0, 0.87) !important',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'black !important',
+                    },
+                  }),
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSubmit(e)
                 }}
               />
             </FormControl>
           </Grid>
-          <Grid textAlign="center">
+          <Grid
+            textAlign="center"
+            {...(horizontal ? { xs: 12, sm: 'auto' } : { xs: 12 })}
+          >
             <FormControl variant="outlined" color="secondary" size="small">
-              <InputLabel htmlFor="password">{t('local_password')}</InputLabel>
+              <InputLabel
+                htmlFor="password"
+                sx={
+                  textColorBlack
+                    ? {
+                        color: 'black !important',
+                        '&.Mui-focused': {
+                          color: 'black !important',
+                        },
+                      }
+                    : undefined
+                }
+              >
+                {t('local_password')}
+              </InputLabel>
               <OutlinedInput
                 id="password"
                 name="password"
@@ -97,10 +188,32 @@ export function LocalLogin({ href, sx, style }) {
                 autoComplete="current-password"
                 color="secondary"
                 label={t('local_password')}
+                sx={{
+                  width: horizontal
+                    ? { xs: 250, sm: 180 }
+                    : 250,
+                  ...(inputBackgroundColor && {
+                    backgroundColor: inputBackgroundColor,
+                  }),
+                  ...(textColorBlack && {
+                    color: 'black !important',
+                    '& .MuiOutlinedInput-input': {
+                      color: 'black !important',
+                    },
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(0, 0, 0, 0.23) !important',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(0, 0, 0, 0.87) !important',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'black !important',
+                    },
+                  }),
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSubmit(e)
                 }}
-                style={{ width: 250 }}
                 endAdornment={
                   <InputAdornment position="end">
                     <IconButton
@@ -117,12 +230,21 @@ export function LocalLogin({ href, sx, style }) {
               />
             </FormControl>
           </Grid>
-          <Grid textAlign="center">
+          <Grid textAlign="center" {...(horizontal ? { xs: 12, sm: 'auto' } : { xs: 12 })}>
             <Button
               variant="contained"
               color="primary"
               onClick={handleSubmit}
               disabled={!user.username || !user.password || !data?.checkUsername || submitted}
+              sx={{
+                minWidth: horizontal ? { xs: 250, sm: 'auto' } : 250,
+                ...(buttonBackgroundColor && {
+                  '&.Mui-disabled': {
+                    backgroundColor: buttonBackgroundColor,
+                    opacity: 0.6,
+                  },
+                }),
+              }}
             >
               {t('login')}
             </Button>
@@ -137,3 +259,4 @@ export function LocalLogin({ href, sx, style }) {
     </Box>
   )
 }
+

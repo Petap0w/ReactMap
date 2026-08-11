@@ -58,6 +58,11 @@ export function Generator({ block, defaultReturn = null }) {
         <LocalLogin
           href={block.localAuthUrl || block.link}
           style={props.style}
+          sx={props.sx}
+          horizontal={block.horizontal}
+          textColor={props.color || props.style?.color}
+          inputBackgroundColor={block.inputBackgroundColor}
+          buttonBackgroundColor={block.buttonBackgroundColor}
         />
       )
     case 'localeSelection':
@@ -104,3 +109,4 @@ export function Generator({ block, defaultReturn = null }) {
       return defaultReturn || null
   }
 }
+
