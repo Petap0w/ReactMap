@@ -361,7 +361,9 @@ function StationMenu({ id, lat, lon, battles = [] }) {
             {option.label}
           </MenuItem>
         ))}
-        {perms.popupcoords && copyCoords && <CopyCoords lat={lat} lon={lon} onClick={handleClose} />}
+        {perms.popupcoords && copyCoords && (
+          <CopyCoords lat={lat} lon={lon} onClick={handleClose} />
+        )}
       </Menu>
     </>
   )

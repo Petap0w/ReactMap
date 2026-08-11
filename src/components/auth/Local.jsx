@@ -45,18 +45,32 @@ export function LocalLogin({
   // Check if text should be black (from textColor prop, style.color, or sx.color)
   const textColorBlack = React.useMemo(() => {
     // Explicit textColor prop takes precedence
-    if (textColor === 'black' || textColor === '#000' || textColor === '#000000') {
+    if (
+      textColor === 'black' ||
+      textColor === '#000' ||
+      textColor === '#000000'
+    ) {
       return true
     }
     // Check style.color
-    if (style?.color === 'black' || style?.color === '#000' || style?.color === '#000000') {
+    if (
+      style?.color === 'black' ||
+      style?.color === '#000' ||
+      style?.color === '#000000'
+    ) {
       return true
     }
     // Check sx.color (can be object or array)
     if (sx) {
-      const sxObj = Array.isArray(sx) ? sx.find((s) => s && typeof s === 'object') : sx
+      const sxObj = Array.isArray(sx)
+        ? sx.find((s) => s && typeof s === 'object')
+        : sx
       if (sxObj && typeof sxObj === 'object') {
-        if (sxObj.color === 'black' || sxObj.color === '#000' || sxObj.color === '#000000') {
+        if (
+          sxObj.color === 'black' ||
+          sxObj.color === '#000' ||
+          sxObj.color === '#000000'
+        ) {
           return true
         }
       }
@@ -93,11 +107,7 @@ export function LocalLogin({
           container
           justifyContent="center"
           alignItems="center"
-          direction={
-            horizontal
-              ? { xs: 'column', sm: 'row' }
-              : 'column'
-          }
+          direction={horizontal ? { xs: 'column', sm: 'row' } : 'column'}
           spacing={horizontal ? { xs: 2, sm: 1 } : 2}
           flexWrap={horizontal ? { xs: 'wrap', sm: 'nowrap' } : 'wrap'}
         >
@@ -131,9 +141,7 @@ export function LocalLogin({
                 label={t('local_username')}
                 color="secondary"
                 sx={{
-                  width: horizontal
-                    ? { xs: 250, sm: 180 }
-                    : 250,
+                  width: horizontal ? { xs: 250, sm: 180 } : 250,
                   ...(inputBackgroundColor && {
                     backgroundColor: inputBackgroundColor,
                   }),
@@ -189,9 +197,7 @@ export function LocalLogin({
                 color="secondary"
                 label={t('local_password')}
                 sx={{
-                  width: horizontal
-                    ? { xs: 250, sm: 180 }
-                    : 250,
+                  width: horizontal ? { xs: 250, sm: 180 } : 250,
                   ...(inputBackgroundColor && {
                     backgroundColor: inputBackgroundColor,
                   }),
@@ -230,12 +236,20 @@ export function LocalLogin({
               />
             </FormControl>
           </Grid>
-          <Grid textAlign="center" {...(horizontal ? { xs: 12, sm: 'auto' } : { xs: 12 })}>
+          <Grid
+            textAlign="center"
+            {...(horizontal ? { xs: 12, sm: 'auto' } : { xs: 12 })}
+          >
             <Button
               variant="contained"
               color="primary"
               onClick={handleSubmit}
-              disabled={!user.username || !user.password || !data?.checkUsername || submitted}
+              disabled={
+                !user.username ||
+                !user.password ||
+                !data?.checkUsername ||
+                submitted
+              }
               sx={{
                 minWidth: horizontal ? { xs: 250, sm: 'auto' } : 250,
                 ...(buttonBackgroundColor && {
@@ -259,4 +273,3 @@ export function LocalLogin({
     </Box>
   )
 }
-

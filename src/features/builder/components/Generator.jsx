@@ -109,4 +109,3 @@ export function Generator({ block, defaultReturn = null }) {
       return defaultReturn || null
   }
 }
-
