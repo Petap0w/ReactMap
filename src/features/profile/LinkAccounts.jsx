@@ -49,16 +49,17 @@ export function LinkAccounts() {
             <Grid2 key={method} xs={12} textAlign="center">
               {auth[`${method}Id`] ? (
                 <Typography color="secondary">
-                  {t('user_username')}: {auth.username}{auth.data['status'] && ` (${t(`${method}_linked`)})`}
+                  {t('user_username')}: {auth.username}
+                  {auth.data.status && ` (${t(`${method}_linked`)})`}
                 </Typography>
               ) : (
                 Component
               )}
-              {auth[`discordId`] && !auth.data['status'] &&
+              {auth.discordId && !auth.data.status && (
                 <Typography color="primary">
                   {t('discord_not_linked')}
                 </Typography>
-              }
+              )}
               <br />
             </Grid2>
           )

@@ -50,20 +50,23 @@ export function Notification({
   const { t } = useTranslation()
   const timerRef = React.useRef(null)
 
-  const handleClose = React.useCallback((event, reason) => {
-    if (reason === 'clickaway' && ignoreClickaway) return
-    if (!closable) return
+  const handleClose = React.useCallback(
+    (event, reason) => {
+      if (reason === 'clickaway' && ignoreClickaway) return
+      if (!closable) return
 
-    if (timerRef.current) {
-      timerRef.current()
-      timerRef.current = null
-    }
+      if (timerRef.current) {
+        timerRef.current()
+        timerRef.current = null
+      }
 
-    // Delay callback until after transition completes
-    setTimeout(() => {
-      if (cb) cb()
-    }, 300)
-  }, [cb, closable, ignoreClickaway])
+      // Delay callback until after transition completes
+      setTimeout(() => {
+        if (cb) cb()
+      }, 300)
+    },
+    [cb, closable, ignoreClickaway],
+  )
 
   React.useEffect(() => {
     if (open && typeof autoHideDuration === 'number') {
@@ -79,7 +82,7 @@ export function Notification({
       }
     }
     return undefined
-  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open])
 
   return (
     <Snackbar
