@@ -36,18 +36,26 @@ export function FieldValue({ field, refreshing = false }) {
     typeof field === 'string' ? field : field[i18n.language] || field.name
   const key = typeof field === 'string' ? field : field.database
   const disabled = typeof field === 'string' ? false : field.disabled
+  const information = typeof field === 'string' ? false : !!field.information
 
   const value = useMemory((s) => s.auth.data?.[key] || '')
   const [setField] = useMutation(Query.user('SET_EXTRA_FIELDS'))
 
   if (!key || !label) return null
   return (
-    <Grid2 key={label} xs={5} textAlign="center" margin="10px 0">
+    <Grid2
+      key={label}
+      xs={information ? 9 : 5}
+      textAlign="center"
+      margin="10px 0"
+    >
       <TextField
+        fullWidth={information}
+        multiline={information}
         disabled={disabled || refreshing}
         variant="outlined"
-        label={label}
-        value={value}
+        label={information ? '' : label}
+        value={information ? label : value}
         onChange={({ target }) => {
           const nextValue = target.value
           useMemory.setState((prev) => ({

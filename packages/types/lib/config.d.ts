@@ -189,6 +189,7 @@ export interface ExtraField {
   name: string
   database: string
   disabled: boolean
+  information?: boolean
 }
 
 export interface Webhook {
