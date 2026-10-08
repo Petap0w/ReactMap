@@ -503,6 +503,19 @@ class EventManager extends Logger {
       if (!Number.isNaN(parseInt(item.charAt(0)))) {
         const [id, form] = item.split('-')
         const formId = form || '0'
+        // Only real pokedex ids belong in the masterfile. Scanners use 0 as a
+        // sentinel (an unhatched raid egg, or a quest whose reward pokemon is
+        // unknown), and this pokemon dictionary is shared by every category's
+        // filter builder — so one junk entry becomes a selectable raid boss,
+        // nest species and station boss at once. The `0-0` raid key it yields is
+        // also the exact identity every egg reports (raid_pokemon_id/form = 0),
+        // making it a wildcard that matches all eggs.
+        if (!/^\d+$/.test(id) || Number(id) <= 0) {
+          this.log.debug(
+            `Ignoring non-pokedex availability key ${item} (${category})`,
+          )
+          return
+        }
         if (category === 'pokemon' && id === '132' && formId === '0') {
           // Wild Ditto uses a synthetic filter key here. Do not backfill it
           // into the masterfile as a real form entry.

@@ -82,7 +82,9 @@ function parseFilterGender(gender) {
 function parseRaidBossFilter(key, filter) {
   const [idPart, formPart] = key.split('-', 2)
   const pokemonId = Number(idPart)
-  if (!Number.isFinite(pokemonId)) return null
+  // 0 is the "no boss yet" sentinel, never a species: a `0-*` key must not
+  // become a boss clause that prefilters every egg into the result set.
+  if (!Number.isFinite(pokemonId) || pokemonId <= 0) return null
 
   let form = null
   if (formPart && formPart !== 'null') {
@@ -386,8 +388,13 @@ class Gym extends Model {
         )
         const isRaid = gym.raid_end_timestamp > ts
         const isEgg = isRaid && !gym.raid_pokemon_id
-        const raidBossFilter =
-          args.filters[`${gym.raid_pokemon_id}-${gym.raid_pokemon_form}`]
+        // An unhatched egg reports raid_pokemon_id/form = 0, concatenating to
+        // the `0-0` filter key — so any stray `0-*` key would match every egg
+        // here and short-circuit the per-tier egg check below. Only look up a
+        // boss filter once a boss has actually hatched.
+        const raidBossFilter = gym.raid_pokemon_id
+          ? args.filters[`${gym.raid_pokemon_id}-${gym.raid_pokemon_form}`]
+          : undefined
 
         if (userBadgeObj[gym.id]) {
           newGym.badge = userBadgeObj[gym.id]
