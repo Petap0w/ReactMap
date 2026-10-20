@@ -158,7 +158,7 @@ export function PlayerAccounts() {
         />
       </Grid2>
       {!!found && (
-        <Grid2 xs={12} textAlign="center">
+        <Grid2 xs={12} textAlign="center" marginBottom="16px">
           <Typography>
             {t('personal_shiny_confirm_trainer', {
               name: found.codename || '',
