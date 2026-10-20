@@ -18,8 +18,8 @@ import { Query } from '@services/queries'
 
 const FRIEND_CODE_LENGTH = 12
 
-/** Two default-width MUI inputs plus the gap the grid leaves between them */
-const TWO_FIELDS = 440
+/** Matches the width of two of the user fields above, side by side */
+const TWO_FIELDS = 414
 
 /** @param {string} input */
 const friendCodeDigits = (input) => input.replace(/\D/g, '')
