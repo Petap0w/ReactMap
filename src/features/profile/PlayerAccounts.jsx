@@ -6,6 +6,7 @@ import Button from '@mui/material/Button'
 import ButtonGroup from '@mui/material/ButtonGroup'
 import Grid2 from '@mui/material/Unstable_Grid2'
 import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
 
 import { useMemory } from '@store/useMemory'
 import { Query } from '@services/queries'
@@ -98,14 +99,23 @@ export function PlayerAccounts() {
     }
   }
 
+  const title = (
+    <Grid2 xs={12}>
+      <Typography variant="h6" align="center">
+        {t('personal_shiny')}
+      </Typography>
+    </Grid2>
+  )
+
   if (saved) {
     return (
       <Grid2 container alignItems="center" justifyContent="center">
+        {title}
         <Grid2 xs={5} textAlign="center" margin="10px 0">
           <TextField
             disabled
             variant="outlined"
-            label={t('personal_shiny')}
+            label={t('personal_shiny_trainer')}
             value={saved.label}
           />
         </Grid2>
@@ -127,8 +137,10 @@ export function PlayerAccounts() {
 
   return (
     <Grid2 container alignItems="center" justifyContent="center">
-      <Grid2 xs={5} textAlign="center" margin="10px 0">
+      {title}
+      <Grid2 xs={10} textAlign="center" margin="10px 0">
         <TextField
+          fullWidth
           variant="outlined"
           label={t('personal_shiny_friend_code')}
           value={formatFriendCode(digits)}
@@ -143,7 +155,7 @@ export function PlayerAccounts() {
           }}
         />
       </Grid2>
-      <Grid2 xs={5} textAlign="center" margin="10px 0">
+      <Grid2 xs={12} textAlign="center">
         {found ? (
           <ButtonGroup>
             <Button disabled={confirming} onClick={handleConfirm}>

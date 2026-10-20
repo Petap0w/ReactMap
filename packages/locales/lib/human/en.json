@@ -958,5 +958,6 @@
   "personal_shiny_error_ineligible": "That trainer is below level 30",
   "personal_shiny_error_unavailable": "The lookup service is unavailable, try again later",
   "personal_shiny_error_already_set": "You already have a player saved",
-  "personal_shiny_error_invalid_input": "A friend code is 12 digits"
+  "personal_shiny_error_invalid_input": "A friend code is 12 digits",
+  "personal_shiny_trainer": "Trainer"
 }

@@ -801,5 +801,6 @@
   "personal_shiny_error_already_set": "Vous avez déjà un joueur enregistré",
   "personal_shiny_error_invalid_input": "Un code ami comporte 12 chiffres",
   "personal_shiny_error_no_access": "Vous n'avez pas accès aux shinys personnels",
-  "personal_shiny_error_generic": "L'enregistrement a échoué, réessayez"
+  "personal_shiny_error_generic": "L'enregistrement a échoué, réessayez",
+  "personal_shiny_trainer": "Dresseur"
 }
