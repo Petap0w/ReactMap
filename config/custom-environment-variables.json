@@ -2176,6 +2176,32 @@
           "__name": "AUTHENTICATION_PERMS_DYNAMAX_ROLES",
           "__format": "json"
         }
+      },
+      "personalShiny": {
+        "enabled": {
+          "__name": "AUTHENTICATION_PERMS_PERSONAL_SHINY_ENABLED",
+          "__format": "boolean"
+        },
+        "trialPeriodEligible": {
+          "__name": "AUTHENTICATION_PERMS_PERSONAL_SHINY_TRIAL_PERIOD_ELIGIBLE",
+          "__format": "boolean"
+        },
+        "roles": {
+          "__name": "AUTHENTICATION_PERMS_PERSONAL_SHINY_ROLES",
+          "__format": "json"
+        },
+        "limits": {
+          "__name": "AUTHENTICATION_PERMS_PERSONAL_SHINY_LIMITS",
+          "__format": "json"
+        },
+        "defaultMax": {
+          "__name": "AUTHENTICATION_PERMS_PERSONAL_SHINY_DEFAULT_MAX",
+          "__format": "number"
+        },
+        "selfService": {
+          "__name": "AUTHENTICATION_PERMS_PERSONAL_SHINY_SELF_SERVICE",
+          "__format": "boolean"
+        }
       }
     }
   },

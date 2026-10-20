@@ -67,7 +67,15 @@ export const FILTER_SKIP_LIST = [
   'selectionDefaults',
 ]
 
-export const ALWAYS_EXCLUDED = new Set(['donor', 'blockedGuildNames', 'admin', 'pokemonpopup', 'popupcoords'])
+export const ALWAYS_EXCLUDED = new Set([
+  'donor',
+  'blockedGuildNames',
+  'admin',
+  'pokemonpopup',
+  'popupcoords',
+  // the matched player limits, not a permission
+  'personalShinyLimits',
+])
 
 export const SCAN_MODES = ['confirmed', 'loading', 'error']
 

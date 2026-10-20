@@ -23,6 +23,7 @@ import { normalizeCategory } from '@utils/normalizeCategory'
 import { getS2Polygon } from '@utils/getS2Polygon'
 import { getFormDisplay } from '@utils/getFormDisplay'
 import { getWildFilterId } from '@utils/getWildFilterId'
+import { getGlowColor } from '@utils/getGlowRules'
 
 import { PokemonPopup } from './PokemonPopup'
 import { basicPokemonMarker, fancyPokemonMarker } from './pokemonMarker'
@@ -37,10 +38,7 @@ const INTERACTION_RANGE_COLOR = '#BA42F6'
  */
 const getGlowStatus = (pkmn, userSettings) => {
   const { glowRules } = useMemory.getState()
-  const valid = glowRules
-    .map((rule) => userSettings[rule(pkmn)])
-    .filter(Boolean)
-  return valid.length > 1 ? userSettings.Multiple : valid[0]
+  return getGlowColor(glowRules, pkmn, userSettings)
 }
 
 /**
@@ -50,6 +48,7 @@ const getGlowStatus = (pkmn, userSettings) => {
  */
 const BasePokemonTile = (pkmn) => {
   const internalId = getWildFilterId(pkmn.pokemon_id, pkmn.form)
+  const isPersonalShiny = !!pkmn.personal_shiny?.length
 
   const [markerRef, setMarkerRef] = React.useState(null)
   const [showUpgradeSnackbar, setShowUpgradeSnackbar] = React.useState(false)
@@ -121,6 +120,8 @@ const BasePokemonTile = (pkmn) => {
         0,
         pkmn.gender,
         pkmn.costume,
+        0,
+        isPersonalShiny,
       ),
       Icons.getSize('pokemon', filterSize),
       badgeId ? Icons.getMisc(badgeId) : '',
@@ -133,6 +134,7 @@ const BasePokemonTile = (pkmn) => {
       pkmn.form,
       pkmn.gender,
       pkmn.costume,
+      isPersonalShiny,
       pkmn.background,
       filterSize,
       badgeId,
@@ -186,6 +188,7 @@ const BasePokemonTile = (pkmn) => {
   /** @type {(string | import('react').ReactElement)[]} */
   const extras = React.useMemo(() => {
     const decorators = []
+    if (isPersonalShiny) decorators.push('✨')
     if (showIv) decorators.push(`${Math.round(pkmn.iv)}%`)
     if (showLevel) decorators.push(`L${Math.round(pkmn.level)}`)
     if (showSize)
@@ -195,7 +198,7 @@ const BasePokemonTile = (pkmn) => {
         <img key={badge} src={badge} alt={badge} style={{ height: 12 }} />,
       )
     return decorators
-  }, [showIv, showLevel, showSize, badge])
+  }, [isPersonalShiny, showIv, showLevel, showSize, badge])
 
   useForcePopup(pkmn.id, markerRef)
   useMarkerTimer(pkmn.expire_timestamp, markerRef)
@@ -422,5 +425,8 @@ const BasePokemonTile = (pkmn) => {
 
 export const PokemonTile = React.memo(
   BasePokemonTile,
-  (prev, next) => prev.updated === next.updated,
+  // who it is shiny for comes with the viewer's players, not the scan
+  (prev, next) =>
+    prev.updated === next.updated &&
+    `${prev.personal_shiny}` === `${next.personal_shiny}`,
 )

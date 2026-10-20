@@ -463,6 +463,18 @@
           "op": "<="
         },
         {
+          "name": "Shiny for Me",
+          "perm": "personalShiny",
+          "value": "#ffd700"
+        },
+        {
+          "name": "Shundo",
+          "perm": ["personalShiny", "iv"],
+          "num": 100,
+          "value": "rainbow",
+          "op": "="
+        },
+        {
           "name": "Multiple",
           "perm": "pvp",
           "value": "#800080"
@@ -952,6 +964,14 @@
         "enabled": true,
         "trialPeriodEligible": false,
         "roles": []
+      },
+      "personalShiny": {
+        "enabled": false,
+        "trialPeriodEligible": false,
+        "roles": [],
+        "limits": [],
+        "defaultMax": 1,
+        "selfService": true
       }
     }
   },
