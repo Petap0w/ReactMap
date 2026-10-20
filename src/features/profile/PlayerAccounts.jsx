@@ -18,6 +18,9 @@ import { Query } from '@services/queries'
 
 const FRIEND_CODE_LENGTH = 12
 
+/** Two default-width MUI inputs plus the gap the grid leaves between them */
+const TWO_FIELDS = 440
+
 /** @param {string} input */
 const friendCodeDigits = (input) => input.replace(/\D/g, '')
 
@@ -141,6 +144,10 @@ export function PlayerAccounts() {
       <Grid2 xs={10} textAlign="center" margin="10px 0">
         <TextField
           fullWidth
+          // the fields above are not fullWidth, so they render at the default
+          // input width: two of them side by side is what this matches, rather
+          // than the ten columns the cell offers
+          sx={{ maxWidth: TWO_FIELDS }}
           variant="outlined"
           label={t('personal_shiny_friend_code')}
           value={formatFriendCode(digits)}
