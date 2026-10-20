@@ -2,13 +2,9 @@
 import * as React from 'react'
 import { useMutation, useQuery } from '@apollo/client'
 import { useTranslation } from 'react-i18next'
-import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import ButtonGroup from '@mui/material/ButtonGroup'
-import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemText from '@mui/material/ListItemText'
-import ListSubheader from '@mui/material/ListSubheader'
+import Grid2 from '@mui/material/Unstable_Grid2'
 import TextField from '@mui/material/TextField'
 
 import { useMemory } from '@store/useMemory'
@@ -29,7 +25,8 @@ const formatFriendCode = (digits) =>
   digits.replace(/(\d{4})(?=\d)/g, '$1 ').trim()
 
 /**
- * The game account personal shinies are shown for.
+ * The game account personal shinies are shown for, presented like the other
+ * read-only fields of the profile.
  *
  * A player is set once and then fixed: the friend code is sent to the map's
  * resolver, which answers with the trainer it belongs to, and the user confirms
@@ -101,94 +98,74 @@ export function PlayerAccounts() {
     }
   }
 
+  if (saved) {
+    return (
+      <Grid2 container alignItems="center" justifyContent="center">
+        <Grid2 xs={5} textAlign="center" margin="10px 0">
+          <TextField
+            disabled
+            variant="outlined"
+            label={t('personal_shiny')}
+            value={saved.label}
+          />
+        </Grid2>
+      </Grid2>
+    )
+  }
+
+  const helperText = () => {
+    if (error) return t(`personal_shiny_error_${error}`)
+    if (found) {
+      return t('personal_shiny_confirm_trainer', {
+        name: found.codename || '',
+        level: found.level || 0,
+        team: found.team || '',
+      })
+    }
+    return t('personal_shiny_friend_code_help')
+  }
+
   return (
-    <Box className="flex-center">
-      <List>
-        <ListSubheader>{t('personal_shiny')}</ListSubheader>
-        {saved ? (
-          <ListItem>
-            <ListItemText
-              primary={t('personal_shiny_player_set', { name: saved.label })}
-              secondary={t('personal_shiny_player_locked')}
-            />
-          </ListItem>
+    <Grid2 container alignItems="center" justifyContent="center">
+      <Grid2 xs={5} textAlign="center" margin="10px 0">
+        <TextField
+          variant="outlined"
+          label={t('personal_shiny_friend_code')}
+          value={formatFriendCode(digits)}
+          disabled={looking || confirming}
+          error={!!error || (!!digits && !complete)}
+          helperText={helperText()}
+          inputProps={{ inputMode: 'numeric' }}
+          onChange={({ target }) => {
+            setCode(friendCodeDigits(target.value).slice(0, FRIEND_CODE_LENGTH))
+            setFound(null)
+            setError('')
+          }}
+        />
+      </Grid2>
+      <Grid2 xs={5} textAlign="center" margin="10px 0">
+        {found ? (
+          <ButtonGroup>
+            <Button disabled={confirming} onClick={handleConfirm}>
+              {t('personal_shiny_confirm')}
+            </Button>
+            <Button
+              color="secondary"
+              disabled={confirming}
+              onClick={() => {
+                setFound(null)
+                setError('')
+              }}
+            >
+              {t('cancel')}
+            </Button>
+          </ButtonGroup>
         ) : (
-          <>
-            <ListItem>
-              <ListItemText secondary={t('personal_shiny_friend_code_help')} />
-            </ListItem>
-            <ListItem>
-              <TextField
-                size="small"
-                fullWidth
-                label={t('personal_shiny_friend_code')}
-                value={formatFriendCode(digits)}
-                disabled={looking || confirming}
-                error={!!digits && !complete}
-                inputProps={{ inputMode: 'numeric' }}
-                onChange={({ target }) => {
-                  setCode(
-                    friendCodeDigits(target.value).slice(0, FRIEND_CODE_LENGTH),
-                  )
-                  setFound(null)
-                  setError('')
-                }}
-              />
-            </ListItem>
-            {!!found && (
-              <ListItem>
-                <ListItemText
-                  primary={t('personal_shiny_confirm_trainer', {
-                    name: found.codename || '',
-                    level: found.level || 0,
-                    team: found.team || '',
-                  })}
-                  secondary={t('personal_shiny_confirm_warning')}
-                />
-              </ListItem>
-            )}
-            {!!error && (
-              <ListItem>
-                <ListItemText
-                  secondary={t(`personal_shiny_error_${error}`)}
-                  secondaryTypographyProps={{ color: 'error' }}
-                />
-              </ListItem>
-            )}
-            <ListItem>
-              {found ? (
-                <ButtonGroup fullWidth>
-                  <Button
-                    disabled={confirming}
-                    color="primary"
-                    onClick={handleConfirm}
-                  >
-                    {t('personal_shiny_confirm')}
-                  </Button>
-                  <Button
-                    disabled={confirming}
-                    color="secondary"
-                    onClick={() => {
-                      setFound(null)
-                      setError('')
-                    }}
-                  >
-                    {t('cancel')}
-                  </Button>
-                </ButtonGroup>
-              ) : (
-                <Button
-                  fullWidth
-                  disabled={!complete || looking}
-                  onClick={handleLookup}
-                >
-                  {t('personal_shiny_lookup')}
-                </Button>
-              )}
-            </ListItem>
-          </>
+          <Button disabled={!complete || looking} onClick={handleLookup}>
+            {t('personal_shiny_lookup')}
+          </Button>
         )}
-      </List>
-    </Box>
+      </Grid2>
+    </Grid2>
   )
 }

@@ -794,8 +794,6 @@
   "personal_shiny_confirm_trainer": "Est-ce bien vous ? {{name}} · Niveau {{level}} · {{team}}",
   "personal_shiny_confirm_warning": "La confirmation enregistre ce dresseur définitivement. Contactez un admin en cas d'erreur.",
   "personal_shiny_confirm": "Oui, c'est moi",
-  "personal_shiny_player_set": "Joueur : {{name}}",
-  "personal_shiny_player_locked": "Votre joueur est enregistré. Contactez un admin s'il doit être modifié.",
   "personal_shiny_error_pending": "Le service de recherche est occupé, réessayez dans un instant",
   "personal_shiny_error_invalid_friend_code": "Aucun dresseur ne correspond à ce code ami",
   "personal_shiny_error_ineligible": "Ce dresseur est en dessous du niveau 30",

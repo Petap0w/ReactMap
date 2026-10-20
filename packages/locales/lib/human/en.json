@@ -953,8 +953,6 @@
   "personal_shiny_confirm_trainer": "Is this you? {{name}} · Level {{level}} · {{team}}",
   "personal_shiny_confirm_warning": "Confirming saves this trainer permanently. Ask an admin if you pick the wrong one.",
   "personal_shiny_confirm": "Yes, that's me",
-  "personal_shiny_player_set": "Player: {{name}}",
-  "personal_shiny_player_locked": "Your player is set. Ask an admin if it needs to change.",
   "personal_shiny_error_pending": "The lookup service is busy, try again in a moment",
   "personal_shiny_error_invalid_friend_code": "No trainer matches that friend code",
   "personal_shiny_error_ineligible": "That trainer is below level 30",
