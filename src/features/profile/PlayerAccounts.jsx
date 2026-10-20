@@ -128,13 +128,8 @@ export function PlayerAccounts() {
 
   const helperText = () => {
     if (error) return t(`personal_shiny_error_${error}`)
-    if (found) {
-      return t('personal_shiny_confirm_trainer', {
-        name: found.codename || '',
-        level: found.level || 0,
-        team: found.team || '',
-      })
-    }
+    // the trainer to confirm gets its own line below, at a readable size
+    if (found) return undefined
     return t('personal_shiny_friend_code_help')
   }
 
@@ -162,6 +157,17 @@ export function PlayerAccounts() {
           }}
         />
       </Grid2>
+      {!!found && (
+        <Grid2 xs={12} textAlign="center">
+          <Typography>
+            {t('personal_shiny_confirm_trainer', {
+              name: found.codename || '',
+              level: found.level || 0,
+              team: found.team || '',
+            })}
+          </Typography>
+        </Grid2>
+      )}
       <Grid2 xs={12} textAlign="center">
         {found ? (
           <ButtonGroup>
