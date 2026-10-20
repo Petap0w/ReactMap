@@ -19,7 +19,8 @@ class Session extends Model {
     const result = await this.query()
       .whereRaw(`json_extract(data, '$.passport.user.perms.donor') = false`)
       .andWhereRaw(
-        `json_extract(data, '$.passport.user.rmStrategy') = '${strategy}'`,
+        `json_unquote(json_extract(data, '$.passport.user.rmStrategy')) = ?`,
+        [strategy],
       )
       .delete()
     log.info(
@@ -37,7 +38,8 @@ class Session extends Model {
     return this.query()
       .whereRaw(`json_extract(data, '$.passport.user.perms.trial') = true`)
       .andWhereRaw(
-        `json_extract(data, '$.passport.user.rmStrategy') = '${strategy}'`,
+        `json_unquote(json_extract(data, '$.passport.user.rmStrategy')) = ?`,
+        [strategy],
       )
       .delete()
   }
@@ -89,10 +91,14 @@ class Session extends Model {
    */
   static async clearDiscordSessions(discordId, botName) {
     const results = await this.query()
-      .whereRaw(`json_extract(data, '$.passport.user.discordId') = ?`, [
-        discordId,
-      ])
-      .orWhereRaw(`json_extract(data, '$.passport.user.id') = ?`, [discordId])
+      .whereRaw(
+        `json_unquote(json_extract(data, '$.passport.user.discordId')) = ?`,
+        [discordId],
+      )
+      .orWhereRaw(
+        `json_unquote(json_extract(data, '$.passport.user.id')) = ?`,
+        [discordId],
+      )
       .delete()
     log.info(
       TAGS.session,
