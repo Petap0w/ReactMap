@@ -946,5 +946,19 @@
   "expert_group_2": "Group 2",
   "expert_group_2_description": "High level with perfect attack.",
   "expert_combine_description": "Combine them with a , or |:",
-  "expert_result_description": "This filter will show a Pokémon if it matches the criteria for Group 1 OR if it matches all the criteria for Group 2."
+  "expert_result_description": "This filter will show a Pokémon if it matches the criteria for Group 1 OR if it matches all the criteria for Group 2.",
+  "personal_shiny_friend_code": "Friend code",
+  "personal_shiny_friend_code_help": "Enter your friend code and we will look up your trainer. Your player can only be set once.",
+  "personal_shiny_lookup": "Look up my trainer",
+  "personal_shiny_confirm_trainer": "Is this you? {{name}} · Level {{level}} · {{team}}",
+  "personal_shiny_confirm_warning": "Confirming saves this trainer permanently. Ask an admin if you pick the wrong one.",
+  "personal_shiny_confirm": "Yes, that's me",
+  "personal_shiny_player_set": "Player: {{name}}",
+  "personal_shiny_player_locked": "Your player is set. Ask an admin if it needs to change.",
+  "personal_shiny_error_pending": "The lookup service is busy, try again in a moment",
+  "personal_shiny_error_invalid_friend_code": "No trainer matches that friend code",
+  "personal_shiny_error_ineligible": "That trainer is below level 30",
+  "personal_shiny_error_unavailable": "The lookup service is unavailable, try again later",
+  "personal_shiny_error_already_set": "You already have a player saved",
+  "personal_shiny_error_invalid_input": "A friend code is 12 digits"
 }

@@ -7,6 +7,7 @@ const { S2LatLng, S2RegionCoverer, S2LatLngRect } = require('nodes2ts')
 
 const config = require('@rm/config')
 const { missing, readAndParseJson } = require('@rm/locales')
+const { log, TAGS } = require('@rm/logger')
 
 const { buildDefaultFilters } = require('../filters/builder/base')
 const { filterComponents } = require('../utils/filterComponents')
@@ -23,7 +24,63 @@ const {
   hasAnyPokestopPermission,
 } = require('../utils/hasAnyPokestopPermission')
 const { getPersonalShinyMax } = require('../utils/personalShinyLimits')
+const {
+  resolvePlayerId,
+  normalizeFriendCode,
+} = require('../services/PlayerIdResolver')
 const { validatePlayerAccounts } = require('../utils/validatePlayerAccounts')
+
+/**
+ * Looks a friend code up with the resolver, and on confirm saves the player it
+ * belongs to. Both steps run the same lookup: the service answers a known code
+ * from its cache, so confirming costs nothing and the id never has to be held
+ * anywhere between the two calls.
+ *
+ * A player is saved once and cannot be changed afterwards, so both steps refuse
+ * outright when one is already on the account.
+ *
+ * @param {{ friendCode: unknown, req: any, perms: any, Db: any }} ctx
+ * @param {boolean} confirm
+ */
+async function playerIdFromFriendCode({ friendCode, req, perms, Db }, confirm) {
+  if (!perms?.personalShiny || !req.user?.id) return { status: 'no_access' }
+  const existing = await Db.models.PlayerAccount.getAll(req.user.id)
+  if (existing.length) return { status: 'already_set' }
+  const code = normalizeFriendCode(friendCode)
+  if (!code) return { status: 'invalid_input' }
+
+  const result = await resolvePlayerId(req.user.id, code)
+  if (result.status !== 'resolved') return { status: result.status }
+  if (!confirm) {
+    return {
+      status: 'resolved',
+      codename: result.codename,
+      level: result.level,
+      team: result.team,
+    }
+  }
+  await Db.models.PlayerAccount.replace(req.user.id, [
+    {
+      playerId: result.playerId,
+      // the trainer name is what the map shows the player next to their
+      // shinies, and it is the only label they never have to type
+      label: (result.codename || `Player 1`).slice(0, 24),
+      active: true,
+    },
+  ])
+  log.info(
+    TAGS.gql,
+    'saved a player for user',
+    req.user.id,
+    'via the friend code resolver',
+  )
+  return {
+    status: 'saved',
+    codename: result.codename,
+    level: result.level,
+    team: result.team,
+  }
+}
 
 /** @type {import("@apollo/server").ApolloServerOptions<import("@rm/types").GqlContext>['resolvers']} */
 const resolvers = {
@@ -296,9 +353,12 @@ const resolvers = {
       }
       return []
     },
-    playerAccounts: (_, __, { req, perms, Db }) => {
+    playerAccounts: async (_, __, { req, perms, Db }) => {
       if (perms?.personalShiny && req.user?.id) {
-        return Db.models.PlayerAccount.getAll(req.user.id)
+        const accounts = await Db.models.PlayerAccount.getAll(req.user.id)
+        // the raw player id is the trainer's account id, and knowing one is
+        // enough to watch that trainer's shinies, so it stays server side
+        return accounts.map(({ label, active }) => ({ label, active }))
       }
       return []
     },
@@ -901,13 +961,22 @@ const resolvers = {
         getPersonalShinyMax(perms),
       )
       if (result.error) return result
-      return {
-        accounts: await Db.models.PlayerAccount.replace(
-          req.user.id,
-          result.accounts,
-        ),
-      }
+      const saved = await Db.models.PlayerAccount.replace(
+        req.user.id,
+        result.accounts,
+      )
+      return { accounts: saved.map(({ label, active }) => ({ label, active })) }
     },
+    resolvePlayerId: async (_, { friendCode }, { req, perms, Db }) =>
+      playerIdFromFriendCode(
+        { friendCode, req, perms, Db },
+        /* confirm */ false,
+      ),
+    confirmPlayerId: async (_, { friendCode }, { req, perms, Db }) =>
+      playerIdFromFriendCode(
+        { friendCode, req, perms, Db },
+        /* confirm */ true,
+      ),
     setGymBadge: async (_, args, { req, Db, perms }) => {
       if (perms?.gymBadges && req?.user?.id) {
         await Db.models.Badge.insert(args.badge, args.gymId, req.user.id)

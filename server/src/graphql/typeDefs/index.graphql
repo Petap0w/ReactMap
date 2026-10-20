@@ -181,6 +181,8 @@ type Mutation {
   setGymBadge(gymId: String, badge: Int): Boolean
   setExtraFields(key: String, value: String): Boolean
   setPlayerAccounts(accounts: [PlayerAccountInput]): PlayerAccounts
+  resolvePlayerId(friendCode: String): PlayerIdResolution
+  confirmPlayerId(friendCode: String): PlayerIdResolution
   nestSubmission(id: ID, name: String): Boolean
   saveComponent(component: String, code: String): String
 }

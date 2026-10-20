@@ -245,6 +245,17 @@ input PlayerAccountInput {
   active: Boolean
 }
 
+"""
+The answer to a friend code lookup. It carries the trainer's profile for the
+user to confirm, never the player id itself.
+"""
+type PlayerIdResolution {
+  status: String
+  codename: String
+  level: Int
+  team: String
+}
+
 input BackupCreate {
   name: String
   data: JSON

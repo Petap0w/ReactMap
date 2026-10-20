@@ -367,6 +367,18 @@
       "__name": "API_ROUTE_UPDATE_LIMIT",
       "__format": "number"
     },
+    "playerIdResolver": {
+      "enabled": {
+        "__name": "API_PLAYER_ID_RESOLVER_ENABLED",
+        "__format": "boolean"
+      },
+      "url": "API_PLAYER_ID_RESOLVER_URL",
+      "apiKey": "API_PLAYER_ID_RESOLVER_API_KEY",
+      "timeoutMs": {
+        "__name": "API_PLAYER_ID_RESOLVER_TIMEOUT_MS",
+        "__format": "number"
+      }
+    },
     "fetchTimeoutMs": {
       "__name": "API_FETCH_TIMEOUT_MS",
       "__format": "number"

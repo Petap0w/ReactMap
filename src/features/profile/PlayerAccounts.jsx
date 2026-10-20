@@ -5,198 +5,188 @@ import { useTranslation } from 'react-i18next'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import ButtonGroup from '@mui/material/ButtonGroup'
-import Checkbox from '@mui/material/Checkbox'
-import Divider from '@mui/material/Divider'
-import IconButton from '@mui/material/IconButton'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import ListItemText from '@mui/material/ListItemText'
 import ListSubheader from '@mui/material/ListSubheader'
 import TextField from '@mui/material/TextField'
-import DeleteIcon from '@mui/icons-material/Delete'
 
 import { useMemory } from '@store/useMemory'
 import { Query } from '@services/queries'
 
 /**
- * @typedef {{ playerId: string, label: string, active: boolean }} PlayerAccount
- * @typedef {PlayerAccount & { key: number }} PlayerAccountRow
+ * @typedef {{ label: string, active: boolean }} PlayerAccount
+ * @typedef {{ status: string, codename?: string, level?: number, team?: string }} Resolution
  */
 
-const FRIEND_CODE = /^\d{12}$/
+const FRIEND_CODE_LENGTH = 12
 
-let nextKey = 0
+/** @param {string} input */
+const friendCodeDigits = (input) => input.replace(/\D/g, '')
 
-/** @param {PlayerAccount} account @returns {PlayerAccountRow} */
-const toRow = ({ playerId, label, active }) => {
-  nextKey += 1
-  return { playerId, label, active, key: nextKey }
-}
+/** Groups a friend code in fours, the way the game shows it */
+const formatFriendCode = (digits) =>
+  digits.replace(/(\d{4})(?=\d)/g, '$1 ').trim()
 
-/** @param {string} playerId */
-const isFriendCode = (playerId) =>
-  FRIEND_CODE.test(playerId.replace(/[\s-]/g, ''))
-
-/** The game accounts personal shinies are shown for */
+/**
+ * The game account personal shinies are shown for.
+ *
+ * A player is set once and then fixed: the friend code is sent to the map's
+ * resolver, which answers with the trainer it belongs to, and the user confirms
+ * that trainer before anything is saved. The player id itself never reaches the
+ * browser.
+ */
 export function PlayerAccounts() {
   const { t } = useTranslation()
   const allowed = useMemory(
     (s) => !!s.auth.perms.personalShiny && s.auth.loggedIn,
   )
   const max = useMemory((s) => s.auth.personalShinyMax)
-  const selfService = useMemory((s) => s.auth.personalShinySelfService)
 
   /** @type {import('@apollo/client').QueryResult<{ playerAccounts: PlayerAccount[] }>} */
   const { data } = useQuery(Query.user('GET_PLAYER_ACCOUNTS'), {
     skip: !allowed,
   })
-  const [save, { loading }] = useMutation(Query.user('SET_PLAYER_ACCOUNTS'), {
-    refetchQueries: ['PlayerAccounts'],
-  })
+  const [lookup, { loading: looking }] = useMutation(
+    Query.user('RESOLVE_PLAYER_ID'),
+  )
+  const [confirm, { loading: confirming }] = useMutation(
+    Query.user('CONFIRM_PLAYER_ID'),
+    { refetchQueries: ['PlayerAccounts'] },
+  )
 
-  const [rows, setRows] = React.useState(/** @type {PlayerAccountRow[]} */ ([]))
-  const [dirty, setDirty] = React.useState(false)
+  const [code, setCode] = React.useState('')
+  const [found, setFound] = React.useState(
+    /** @type {Resolution | null} */ (null),
+  )
   const [error, setError] = React.useState('')
 
-  React.useEffect(() => {
-    if (data?.playerAccounts && !dirty) {
-      setRows(data.playerAccounts.map(toRow))
+  const saved = data?.playerAccounts?.[0]
+  const digits = friendCodeDigits(code)
+  const complete = digits.length === FRIEND_CODE_LENGTH
+
+  if (!allowed || !data || (!max && !saved)) return null
+
+  /** @param {Resolution | undefined} result */
+  const handleResult = (result) => {
+    if (result?.status === 'resolved' || result?.status === 'saved') {
+      setFound(result.status === 'resolved' ? result : null)
+      setError('')
+      if (result.status === 'saved') setCode('')
+      return
     }
-  }, [data, dirty])
-
-  if (!allowed || !data || (!max && !rows.length)) return null
-
-  /** @param {number} key @param {Partial<PlayerAccount>} change */
-  const update = (key, change) => {
-    setDirty(true)
-    setError('')
-    setRows((prev) =>
-      prev.map((row) => (row.key === key ? { ...row, ...change } : row)),
-    )
+    setFound(null)
+    setError(result?.status || 'unavailable')
   }
 
-  const handleSave = async () => {
+  const handleLookup = async () => {
     try {
-      const { data: saved } = await save({
-        variables: {
-          accounts: rows.map(({ playerId, label, active }) => ({
-            playerId,
-            label,
-            active,
-          })),
-        },
+      const { data: result } = await lookup({
+        variables: { friendCode: digits },
       })
-      const result = saved?.setPlayerAccounts
-      if (!result || result.error) {
-        setError(result?.error || 'generic')
-        return
-      }
-      setRows(result.accounts.map(toRow))
-      setDirty(false)
+      handleResult(result?.resolvePlayerId)
     } catch (e) {
-      setError('generic')
+      handleResult(undefined)
     }
   }
 
-  const incomplete = rows.some(
-    (row) => !row.playerId.trim() || isFriendCode(row.playerId),
-  )
+  const handleConfirm = async () => {
+    try {
+      const { data: result } = await confirm({
+        variables: { friendCode: digits },
+      })
+      handleResult(result?.confirmPlayerId)
+    } catch (e) {
+      handleResult(undefined)
+    }
+  }
 
   return (
     <Box className="flex-center">
       <List>
-        <ListSubheader>
-          {t('personal_shiny')} ·{' '}
-          {t('personal_shiny_count', { count: rows.length, max })}
-        </ListSubheader>
-        {rows.map((row) => (
-          <React.Fragment key={row.key}>
-            <ListItem>
-              <Checkbox
-                checked={row.active}
-                disabled={!selfService}
-                onChange={({ target }) =>
-                  update(row.key, { active: target.checked })
-                }
-                inputProps={{ 'aria-label': t('personal_shiny_active') }}
-              />
-              <TextField
-                size="small"
-                fullWidth
-                label={t('personal_shiny_label')}
-                value={row.label}
-                disabled={!selfService}
-                inputProps={{ maxLength: 24 }}
-                onChange={({ target }) =>
-                  update(row.key, { label: target.value })
-                }
-              />
-              {selfService && (
-                <IconButton
-                  aria-label={t('personal_shiny_remove')}
-                  onClick={() => {
-                    setDirty(true)
-                    setError('')
-                    setRows((prev) => prev.filter(({ key }) => key !== row.key))
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              )}
-            </ListItem>
-            <ListItem>
-              <TextField
-                size="small"
-                fullWidth
-                label={t('personal_shiny_player_id')}
-                value={row.playerId}
-                disabled={!selfService}
-                error={isFriendCode(row.playerId)}
-                helperText={
-                  isFriendCode(row.playerId)
-                    ? t('personal_shiny_error_friend_code')
-                    : undefined
-                }
-                onChange={({ target }) =>
-                  update(row.key, { playerId: target.value })
-                }
-              />
-            </ListItem>
-            <Divider />
-          </React.Fragment>
-        ))}
-        {!!error && (
+        <ListSubheader>{t('personal_shiny')}</ListSubheader>
+        {saved ? (
           <ListItem>
             <ListItemText
-              secondary={t(`personal_shiny_error_${error}`, { max })}
-              secondaryTypographyProps={{ color: 'error' }}
+              primary={t('personal_shiny_player_set', { name: saved.label })}
+              secondary={t('personal_shiny_player_locked')}
             />
           </ListItem>
-        )}
-        {selfService && (
-          <ListItem>
-            <ButtonGroup fullWidth>
-              <Button
-                disabled={rows.length >= max}
-                onClick={() => {
-                  setDirty(true)
+        ) : (
+          <>
+            <ListItem>
+              <ListItemText secondary={t('personal_shiny_friend_code_help')} />
+            </ListItem>
+            <ListItem>
+              <TextField
+                size="small"
+                fullWidth
+                label={t('personal_shiny_friend_code')}
+                value={formatFriendCode(digits)}
+                disabled={looking || confirming}
+                error={!!digits && !complete}
+                inputProps={{ inputMode: 'numeric' }}
+                onChange={({ target }) => {
+                  setCode(
+                    friendCodeDigits(target.value).slice(0, FRIEND_CODE_LENGTH),
+                  )
+                  setFound(null)
                   setError('')
-                  setRows((prev) => [
-                    ...prev,
-                    toRow({ playerId: '', label: '', active: true }),
-                  ])
                 }}
-              >
-                {t('personal_shiny_add')}
-              </Button>
-              <Button
-                disabled={!dirty || loading || incomplete}
-                onClick={handleSave}
-              >
-                {t('save')}
-              </Button>
-            </ButtonGroup>
-          </ListItem>
+              />
+            </ListItem>
+            {!!found && (
+              <ListItem>
+                <ListItemText
+                  primary={t('personal_shiny_confirm_trainer', {
+                    name: found.codename || '',
+                    level: found.level || 0,
+                    team: found.team || '',
+                  })}
+                  secondary={t('personal_shiny_confirm_warning')}
+                />
+              </ListItem>
+            )}
+            {!!error && (
+              <ListItem>
+                <ListItemText
+                  secondary={t(`personal_shiny_error_${error}`)}
+                  secondaryTypographyProps={{ color: 'error' }}
+                />
+              </ListItem>
+            )}
+            <ListItem>
+              {found ? (
+                <ButtonGroup fullWidth>
+                  <Button
+                    disabled={confirming}
+                    color="primary"
+                    onClick={handleConfirm}
+                  >
+                    {t('personal_shiny_confirm')}
+                  </Button>
+                  <Button
+                    disabled={confirming}
+                    color="secondary"
+                    onClick={() => {
+                      setFound(null)
+                      setError('')
+                    }}
+                  >
+                    {t('cancel')}
+                  </Button>
+                </ButtonGroup>
+              ) : (
+                <Button
+                  fullWidth
+                  disabled={!complete || looking}
+                  onClick={handleLookup}
+                >
+                  {t('personal_shiny_lookup')}
+                </Button>
+              )}
+            </ListItem>
+          </>
         )}
       </List>
     </Box>
