@@ -11,6 +11,7 @@ const {
   collapseRocketPokemonFilterKeys,
 } = require('../utils/rocketPokemonFiltering')
 const { getCache } = require('./cache')
+const { golbatCapabilities } = require('./GolbatCapabilities')
 
 const STATION_BATTLE_REQUIRED_COLUMNS = [
   'station_id',
@@ -202,6 +203,7 @@ class DbManager extends Logger {
       hasShowcaseData,
       hasShowcaseForm,
       hasShowcaseType,
+      hasShowcaseFocus,
     ] = await schema('pokestop')
       .columnInfo()
       .then((columns) => [
@@ -211,6 +213,7 @@ class DbManager extends Logger {
         'showcase_pokemon_id' in columns,
         'showcase_pokemon_form_id' in columns,
         'showcase_pokemon_type_id' in columns,
+        'showcase_focus' in columns,
       ])
     const [stationColumns, stationBattleColumns] = await Promise.all([
       schema('station').columnInfo(),
@@ -274,6 +277,7 @@ class DbManager extends Logger {
       hasShowcaseData,
       hasShowcaseForm,
       hasShowcaseType,
+      hasShowcaseFocus,
       hasMultiBattles,
       hasStationedGmax,
       hasBattlePokemonStats,
@@ -289,6 +293,12 @@ class DbManager extends Logger {
         this.connections.length > 1 ? 's' : ''
       }`,
     )
+    // Endpoint capability discovery is the /api/status counterpart of
+    // schemaCheck: it runs here so the registry is populated before the first
+    // availability refresh (startup and config reload both await this).
+    const discovery = golbatCapabilities
+      .discover(Object.values(this.endpoints))
+      .catch((e) => this.log.error('Golbat capability discovery failed', e))
     await Promise.all(
       this.connections.map(async (schema, i) => {
         try {
@@ -324,6 +334,8 @@ class DbManager extends Logger {
               // onlyConfirmed is ineffective and confirmed `a` reward filters
               // fall back to the grunt's possible-encounter pool.
               hasConfirmed: true,
+              // Pure endpoints have no SQL schema to probe.
+              hasShowcaseFocus: false,
             }
           }
 
@@ -358,6 +370,7 @@ class DbManager extends Logger {
         }
       }),
     )
+    await discovery
   }
 
   /**
