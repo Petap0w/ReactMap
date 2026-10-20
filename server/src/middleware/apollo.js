@@ -9,6 +9,14 @@ const { version } = require('../../../package.json')
 const { DataLimitCheck } = require('../services/DataLimitCheck')
 const config = require('@rm/config')
 
+/** Queries the login screen makes before a session exists */
+const PUBLIC_ENDPOINTS = new Set([
+  'Locales',
+  'CustomComponent',
+  'CheckUsername',
+  'MotdCheck',
+])
+
 /**
  *
  * @param {Awaited<ReturnType<import('../graphql/server')['startApollo']>>} server
@@ -58,35 +66,17 @@ function apolloMiddleware(server) {
         })
       }
 
-      // Check if auth is enabled with no always-enabled perms and no user
-      const authentication = config.getSafe('authentication')
-      const hasAuthEnabled =
-        authentication?.methods?.length > 0 &&
-        !authentication?.alwaysEnabledPerms?.length
-      const hasNoUser = !id
-      const hasNoPerms =
-        !perms ||
-        (typeof perms === 'object' &&
-          Object.keys(perms).filter(
-            (k) =>
-              k !== 'areaRestrictions' &&
-              k !== 'webhooks' &&
-              k !== 'scanner' &&
-              perms[k] === true,
-          ).length === 0)
-
-      if (hasAuthEnabled && hasNoUser && hasNoPerms) {
-        // Allow endpoints needed for login/registration flow
-        const publicEndpoints = ['Locales', 'CustomComponent', 'CheckUsername', 'MotdCheck']
-        if (!publicEndpoints.includes(endpoint)) {
-          throw new GraphQLError('session_expired', {
-            extensions: {
-              ...errorCtx,
-              http: { status: 511 },
-              code: 'EXPIRED',
-            },
-          })
-        }
+      // A session with no perms is expired or revoked, whatever else it still
+      // carries: the only queries it may still make are the ones the login
+      // screen itself needs before anyone is logged in.
+      if (!perms && !PUBLIC_ENDPOINTS.has(endpoint)) {
+        throw new GraphQLError('session_expired', {
+          extensions: {
+            ...errorCtx,
+            http: { status: 511 },
+            code: 'EXPIRED',
+          },
+        })
       }
 
       if (
