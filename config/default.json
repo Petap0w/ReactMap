@@ -640,6 +640,7 @@
       "gymBadgeTableName": "gymBadges",
       "sessionTableName": "session",
       "backupTableName": "backups",
+      "playerAccountTableName": "playerAccounts",
       "migrationTableName": "knex_migrations",
       "maxConnections": 10,
       "userBackupLimits": 10,
